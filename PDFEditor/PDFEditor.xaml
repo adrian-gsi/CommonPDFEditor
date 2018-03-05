@@ -138,6 +138,7 @@
                     <Image Source=".\Imgs\ZoomOut.png" />
                 </Button.Content>
             </Button>
+            <TextBlock Name="tbZoomValue">100%</TextBlock>
             <Button x:Name="btZoomPlus" Click="btZoomIn_Click" ToolTip="Zoom +" >
                 <Button.Content>
                     <Image Source=".\Imgs\ZoomIn.png" />

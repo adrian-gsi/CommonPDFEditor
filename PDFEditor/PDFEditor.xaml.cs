@@ -94,6 +94,8 @@ namespace PDFEditorNS
             //viewer.SetPageViewMode(PDFViewWPF.PageViewMode.e_fit_width);
             editor._userAnnots.ClearAnnotations();
             editor.tbCurrentPage.Text = "1";
+            editor.Viewer.SetZoom(1);
+            editor.UpdateZoomValueInUI();
         }
         #endregion CurrentDoc
         
@@ -938,22 +940,30 @@ namespace PDFEditorNS
         
         private void btZoomIn_Click(object sender, RoutedEventArgs e)
         {
-            _viewer.SetZoom(_viewer.GetZoom() + (_viewer.GetZoom() / 4));
+            _viewer.SetZoom(_viewer.GetZoom() + .25);
 
-            //Max Zoom = 1000%
+            //Garantizar siempre un zoom menor o igual a 20
             if (_viewer.GetZoom() > 10)
             {
                 _viewer.SetZoom(10);
             }
+            UpdateZoomValueInUI();
         }
+
+        private void UpdateZoomValueInUI()
+        {
+            tbZoomValue.Text = Math.Floor(Viewer.GetZoom() * 100) + "%";
+        }
+
         private void btZoomOut_Click(object sender, RoutedEventArgs e)
         {
-            _viewer.SetZoom(_viewer.GetZoom() - (_viewer.GetZoom() / 4));
-            //Min Zoom = 25%
+            _viewer.SetZoom(_viewer.GetZoom() - .25);
+            //Garantizar un zoom siempre mayor que .5
             if (_viewer.GetZoom() < .25)
             {
                 _viewer.SetZoom(.25);
             }
+            UpdateZoomValueInUI();
         }
 
         private void fromWebApi_Click(object sender, RoutedEventArgs e)
