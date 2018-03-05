@@ -41,6 +41,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -60,9 +61,18 @@
     <Compile Include="Annotations\AnnotationRectCollection.cs" />
     <Compile Include="Annotations\AnnotationsContainer.cs" />
     <Compile Include="Annotations\BaseAnnotation.cs" />
+    <Compile Include="Annotations\Circle.cs" />
+    <Compile Include="Annotations\FreeText.cs" />
     <Compile Include="Annotations\Highlight.cs" />
+    <Compile Include="Annotations\Line.cs" />
     <Compile Include="Annotations\MarkArea.cs" />
+    <Compile Include="Annotations\RubberStamp.cs" />
+    <Compile Include="Annotations\Square.cs" />
+    <Compile Include="Annotations\Squiggly.cs" />
+    <Compile Include="Annotations\Stamper.cs" />
     <Compile Include="Annotations\StickyNote.cs" />
+    <Compile Include="Annotations\Strikeout.cs" />
+    <Compile Include="Annotations\Underline.cs" />
     <Compile Include="Controls\TextPopup.xaml.cs">
       <DependentUpon>TextPopup.xaml</DependentUpon>
     </Compile>
@@ -125,6 +135,22 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Imgs\MarkArea.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Imgs\circle.png" />
+    <Resource Include="Imgs\ink.png" />
+    <Resource Include="Imgs\Line.png" />
+    <Resource Include="Imgs\Square.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Imgs\download.png" />
+    <Resource Include="Imgs\sticky.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Imgs\RubberStamp.png" />
+    <Resource Include="Imgs\Stamper.png" />
+    <Resource Include="Imgs\ZoomIn.png" />
+    <Resource Include="Imgs\ZoomOut.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -12,8 +12,13 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>-->
         <StackPanel Grid.Row="0" Orientation="Horizontal" DockPanel.Dock="Top">
-            <Button Command="{Binding OpenCommand}">Open</Button>
+            <Button Command="{Binding OpenFileCommand}">Open File</Button>
+            <Button Command="{Binding OpenURLCommand}" Height="25" Width="25" VerticalAlignment="Top">
+                <Button.Content>
+                    <Image Source="C:\GSI\PDFTronConcept\PDF Editor Concept\Imgs\download.png" />
+                </Button.Content>
+            </Button>
         </StackPanel>
-        <pe:PDFEditor IsEnabled="{Binding Path=EditorEnabled, Mode=OneWay}" x:Name="myEditor" PopupsOwner="{x:Reference Name=wMainWindow}"  Grid.Row="1" CurrentDoc="{Binding Path=currentPDF, Mode=TwoWay}" />
+        <pe:PDFEditor IsEnabled="{Binding Path=EditorEnabled, Mode=OneWay}" x:Name="myEditor" PopupsOwner="{x:Reference Name=wMainWindow}"  Grid.Row="1" CurrentDoc="{Binding Path=currentPDF, Mode=TwoWay}"  />
     </DockPanel>
 </Window>

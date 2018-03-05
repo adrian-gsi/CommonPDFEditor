@@ -12,7 +12,8 @@ namespace PDF_Editor_Concept
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-        string _current;
+        string _currentPDF;
+
         private bool _editorEnabled = true;
         public MainViewModel()
         {
@@ -21,14 +22,14 @@ namespace PDF_Editor_Concept
 
         public string currentPDF
         {
-            get { return _current; }
+            get { return _currentPDF; }
             set
             {
-                _current = value;
+                _currentPDF = value;
                 RaisePropertyChanged("currentPDF");
             }
         }
-        
+
         public bool EditorEnabled
         {
             get { return _editorEnabled; }
@@ -41,9 +42,10 @@ namespace PDF_Editor_Concept
 
         //Generic Command
         RelayCommand _openCommand;
+        RelayCommand _openURLCommand;
 
         //Command to Open and Load a File
-        public ICommand OpenCommand
+        public ICommand OpenFileCommand
         {
             get
             {
@@ -54,6 +56,27 @@ namespace PDF_Editor_Concept
 
                 return _openCommand;
             }
+        }
+
+        public ICommand OpenURLCommand
+        {
+            get
+            {
+                if (_openURLCommand == null)
+                {
+                    _openURLCommand = new RelayCommand(param => this.OpenURL());
+                }
+
+                return _openURLCommand;
+            }
+        }
+
+        private void OpenURL()
+        {
+            string uri;
+            uri = @"http://localhost/PDFWebApi/somefile";
+            //uri = @"http://localhost:8627/somefile";
+            currentPDF = uri;
         }
 
         //Load PDF logic

@@ -22,8 +22,5 @@ namespace PDFEditorNS
 
         }
         #endregion Constructors
-
-        //[DataMember]
-        //public double[] color { get; set; }
     }
 }

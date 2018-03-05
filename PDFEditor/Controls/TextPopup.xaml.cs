@@ -35,6 +35,16 @@ namespace PDFEditor.Controls
         {
             this.DragMove();
         }
-        
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            tbPopupContent.Focus();
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+                this.Close();
+        }
     }
 }

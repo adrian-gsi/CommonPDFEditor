@@ -21,6 +21,7 @@ namespace PDF_Editor_Concept
         {
             InitializeComponent();
             this.DataContext = new MainViewModel();
+            this.WindowState = WindowState.Maximized;
         }
 
         public PDFEditorNS.PDFEditor getEditor()

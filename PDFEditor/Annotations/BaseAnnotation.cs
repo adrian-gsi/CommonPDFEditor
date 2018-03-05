@@ -14,6 +14,9 @@ namespace PDFEditorNS
             public const string Id = "Id";
             public const string RectArea = "RectArea";
             public const string Page = "Page";
+            public const string ColorRed = "ColorRed";
+            public const string ColorBlue = "ColorBlue";
+            public const string ColorGreen = "ColorGreen";
         }
 
         #region Constructors
@@ -71,6 +74,21 @@ namespace PDFEditorNS
         public Guid Id() { return Properties.Guid(Names.Id); }
         private BaseAnnotation Guid(Guid id) { Properties.Guid(Names.Id, id); return this; }
         #endregion Id
+
+        #region ColorRed
+        public double ColorRed() { return Properties.Double(Names.ColorRed); }
+        public BaseAnnotation ColorRed(double colorRed) { Properties.Double(Names.ColorRed, colorRed); return this; }
+        #endregion ColorRed
+
+        #region ColorBlue
+        public double ColorBlue() { return Properties.Double(Names.ColorBlue); }
+        public BaseAnnotation ColorBlue(double colorBlue) { Properties.Double(Names.ColorBlue, colorBlue); return this; }
+        #endregion ColorBlue
+
+        #region ColorGreen
+        public double ColorGreen() { return Properties.Double(Names.ColorGreen); }
+        public BaseAnnotation ColorGreen(double colorGreen) { Properties.Double(Names.ColorGreen, colorGreen); return this; }
+        #endregion ColorGreen
 
         #region IBuild
         protected override void onPropertiesSet()

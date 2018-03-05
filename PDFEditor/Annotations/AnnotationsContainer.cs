@@ -33,6 +33,27 @@ namespace PDFEditorNS
                 case MarkArea.Names.MarkArea:
                     return new MarkArea(properties);
 
+                case FreeText.Names.FreeText:
+                    return new FreeText(properties);
+
+                case Circle.Names.Circle:
+                    return new Circle(properties);
+
+                case Square.Names.Square:
+                    return new Square(properties);
+
+                case Line.Names.Line:
+                    return new Line(properties);
+
+                case Stamper.Names.Stamper:
+                    return new Stamper(properties);
+
+                case RubberStamp.Names.RubberStamp:
+                    return new RubberStamp(properties);
+
+                case XMLSquiggly.Names.Squiggly:
+                    return new XMLSquiggly(properties);
+
                 default:
                     throw new Exception($"Unknown assignment {properties.PropertyName}");
             }

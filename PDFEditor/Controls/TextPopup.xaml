@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PDFEditor.Controls"
         mc:Ignorable="d"
-        Title="" Height="135.117" Width="249.22" Topmost="True" WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="NoResize" WindowStyle="ToolWindow" >
+        Title="" Height="135.117" Width="249.22" Topmost="True" WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="NoResize" WindowStyle="ToolWindow" Loaded="Window_Loaded" KeyDown="Window_KeyDown" >
     <Grid>
         <TextBox x:Name="tbPopupContent" Margin="10" TextWrapping="Wrap"/>
     </Grid>

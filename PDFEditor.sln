@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFEditor", "PDFEditor\PDFE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDF Editor Concept", "PDF Editor Concept\PDF Editor Concept.csproj", "{0988AD32-BADB-4F9F-AB0B-CCC7850EF44A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDF_Service", "PDF_Service\PDF_Service.csproj", "{FCB8F676-18AE-4AFE-A5D4-CA07825982D6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{0988AD32-BADB-4F9F-AB0B-CCC7850EF44A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0988AD32-BADB-4F9F-AB0B-CCC7850EF44A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0988AD32-BADB-4F9F-AB0B-CCC7850EF44A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCB8F676-18AE-4AFE-A5D4-CA07825982D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCB8F676-18AE-4AFE-A5D4-CA07825982D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCB8F676-18AE-4AFE-A5D4-CA07825982D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCB8F676-18AE-4AFE-A5D4-CA07825982D6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

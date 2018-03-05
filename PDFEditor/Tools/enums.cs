@@ -8,9 +8,20 @@ namespace PDFEditorNS
 {
     enum AnnotationOptions
     {
-        HIGHLIGHT,
+        HIGHLIGHTAREA,
         COMMENT,
         MARKAREA,
+        FREETEXT,
+        CIRCLE,
+        SQUARE,
+        LINE,
+        STAMPER,
+        STAMPERTEXT,
+        RUBBERSTAMP,
+        HIGHLIGHTTEXT,
+        SQUIGGLY,
+        STRIKEOUT,
+        UNDERLINE,
         NONE
     }
 }

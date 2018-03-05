@@ -21,56 +21,131 @@
     <Grid Name="gContainer">
         <DockPanel Name="dpContainer">
             <ToolBarTray DockPanel.Dock="Top">
-            <ToolBar Height="29" >
-                <Button Name="btPrevious" Click="btPrevious_Click" ToolTip="Previous page" Style="{StaticResource ActionButtonsStyle}">
-                    <Button.Content>
-                        <Image Source=".\Imgs\Previous.png" ></Image>
-                    </Button.Content>
-                </Button>
-                <TextBox Name="tbCurrentPage" PreviewTextInput="tbCurrentPage_PreviewTextInput" TextChanged="tbCurrentPage_TextChanged">0</TextBox>
-                <Button Name="btNext" Click="btNext_Click" ToolTip="Next page" Style="{StaticResource ActionButtonsStyle}">
-                    <Button.Content>
-                        <Image Source=".\Imgs\Next.png" ></Image>
-                    </Button.Content>
-                </Button>
-                <RadioButton x:Name="rbHighlight" ToolTip="Highlight" Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbHighlight_Checked" Unchecked="rbHighlight_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown" >
-                    <RadioButton.Content>
-                        <Image Source=".\Imgs\Highlight.png" ></Image>
-                    </RadioButton.Content>
-                </RadioButton>
-                <RadioButton x:Name="rbNote" ToolTip="Comment"  Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbNote_Checked" Unchecked="rbNote_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown"  >
-                    <RadioButton.Content>
-                        <Image Source=".\Imgs\Comment.png" ></Image>
-                    </RadioButton.Content>
-                </RadioButton>
-                <RadioButton x:Name="rbMarkArea" ToolTip="Mark Area"  Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbMarkArea_Checked" Unchecked="rbMarkArea_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown"  >
-                    <RadioButton.Content>
-                        <Image Source=".\Imgs\MarkArea.png" ></Image>
-                    </RadioButton.Content>
-                </RadioButton>
-                <Button x:Name="delBtn" Click="delBtn_Click" ToolTip="Delete annotation" >
-                    <Button.Content>
-                        <Image Source=".\Imgs\delete.png" />
-                    </Button.Content>
-                </Button>
-                <Button x:Name="loadBtn" Click="loadBtn_Click" ToolTip="Load annotations..." >
-                    <Button.Content>
-                        <Image Source=".\Imgs\load.png" />
-                    </Button.Content>
-                </Button>
-                    <Button x:Name="saveBtn" Click="saveBtn_Click" ToolTip="{Binding ElementName=PDFTronViewer,Path=CurrentSaveFile}">
-                    <Button.Content>
-                        <Image Source=".\Imgs\save.png" />
-                    </Button.Content>
-                </Button>
-                <Button x:Name="saveAsBtn" Click="saveAsBtn_Click" ToolTip="Save as..." >
-                    <Button.Content>
-                        <Image Source=".\Imgs\save-as.png" />
-                    </Button.Content>
-                </Button>
-            </ToolBar>
-        </ToolBarTray>
-        <Border x:Name="PDFViewerBorder" /><!--Grid.Row="1"-->
+                <ToolBar Height="29" >
+                    <Button Name="btPrevious" Height="25" Width="25" VerticalAlignment="Top" Click="btPrevious_Click" ToolTip="Previous page" Style="{StaticResource ActionButtonsStyle}">
+                        <Button.Content>
+                            <Image Source=".\Imgs\Previous.png" ></Image>
+                        </Button.Content>
+                    </Button>
+                    <TextBox Name="tbCurrentPage" PreviewTextInput="tbCurrentPage_PreviewTextInput" TextChanged="tbCurrentPage_TextChanged">0</TextBox>
+                    <Button Name="btNext" Height="25" Width="25" VerticalAlignment="Top" Click="btNext_Click" ToolTip="Next page" Style="{StaticResource ActionButtonsStyle}">
+                        <Button.Content>
+                            <Image Source=".\Imgs\Next.png" ></Image>
+                        </Button.Content>
+                    </Button>
+                    <RadioButton x:Name="rbHighlight" ToolTip="Highlight Area" Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbHighlight_Checked" Unchecked="rb_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown" >
+                        <RadioButton.Content>
+                            <Image Source=".\Imgs\Highlight.png" ></Image>
+                        </RadioButton.Content>
+                    </RadioButton>
+                    <RadioButton x:Name="rbNote" ToolTip="Sticky Note"  Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbNote_Checked" Unchecked="rb_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown"  >
+                        <RadioButton.Content>
+                            <Image Source=".\Imgs\sticky.png" ></Image>
+                        </RadioButton.Content>
+                    </RadioButton>
+                    <RadioButton x:Name="rbMarkArea" ToolTip="Mark Area"  Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbMarkArea_Checked" Unchecked="rb_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown"  >
+                        <RadioButton.Content>
+                            <Image Source=".\Imgs\MarkArea.png" ></Image>
+                        </RadioButton.Content>
+                    </RadioButton>
+                    <RadioButton x:Name="rbCircle" ToolTip="Circle"  Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbCircle_Checked" Unchecked="rb_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown"  >
+                        <RadioButton.Content>
+                            <Image Source=".\Imgs\circle.png" ></Image>
+                        </RadioButton.Content>
+                    </RadioButton>
+                    <RadioButton x:Name="rbSquare" ToolTip="Square"  Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbSquare_Checked" Unchecked="rb_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown"  >
+                        <RadioButton.Content>
+                            <Image Source=".\Imgs\Square.png" ></Image>
+                        </RadioButton.Content>
+                    </RadioButton>
+                    <RadioButton x:Name="rbLine" ToolTip="Line"  Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbLine_Checked" Unchecked="rb_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown"  >
+                        <RadioButton.Content>
+                            <Image Source=".\Imgs\Line.png" ></Image>
+                        </RadioButton.Content>
+                    </RadioButton>
+                    <RadioButton x:Name="rbFreeText" ToolTip="Free Text"  Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbFreeText_Checked" Unchecked="rb_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown"  >
+                        <RadioButton.Content>
+                            <Image Source=".\Imgs\Comment.png" ></Image>
+                        </RadioButton.Content>
+                    </RadioButton>
+                    <RadioButton x:Name="rbStamper" ToolTip="Stamper"  Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbStamper_Checked" Unchecked="rb_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown"  >
+                        <RadioButton.Content>
+                            <Image Source=".\Imgs\Stamper.png" ></Image>
+                        </RadioButton.Content>
+                    </RadioButton>
+                    <RadioButton x:Name="rbStamperText" ToolTip="StamperText"  Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbStamperText_Checked" Unchecked="rb_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown"  >
+                        <RadioButton.Content>
+                            <Image Source=".\Imgs\Stamper.png" ></Image>
+                        </RadioButton.Content>
+                    </RadioButton>
+                    <RadioButton x:Name="rbRubberStamp" ToolTip="Rubber Stamp"  Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbRubberStamp_Checked" Unchecked="rb_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown"  >
+                        <RadioButton.Content>
+                            <Image Source=".\Imgs\RubberStamp.png" ></Image>
+                        </RadioButton.Content>
+                    </RadioButton>
+                </ToolBar>
+                <ToolBar Name="tbrText" Height="29" VerticalAlignment="Bottom">
+                    <RadioButton x:Name="rbHighlightText" ToolTip="Highlight Text" Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Unchecked="rb_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown" Checked="rbHighlightText_Checked" >
+                        <RadioButton.Content>
+                            <Image Source=".\Imgs\Highlight.png" ></Image>
+                        </RadioButton.Content>
+                    </RadioButton>
+                    <RadioButton x:Name="rbSquiggly" ToolTip="Squiggly" Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbSquiggly_Checked" Unchecked="rb_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown" >
+                        <RadioButton.Content>
+                            <Image Source=".\Imgs\Highlight.png" ></Image>
+                        </RadioButton.Content>
+                    </RadioButton>
+                    <RadioButton x:Name="rbStrikeout" ToolTip="Strikeout" Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbStrikeout_Checked" Unchecked="rb_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown" >
+                        <RadioButton.Content>
+                            <Image Source=".\Imgs\Highlight.png" ></Image>
+                        </RadioButton.Content>
+                    </RadioButton>
+                    <RadioButton x:Name="rbUnderline" ToolTip="Underline" Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbUnderline_Checked" Unchecked="rb_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown" >
+                        <RadioButton.Content>
+                            <Image Source=".\Imgs\Highlight.png" ></Image>
+                        </RadioButton.Content>
+                    </RadioButton>
+                </ToolBar>
+                <ToolBar Name="tbrZoom" Height="29" VerticalAlignment="Bottom">
+                    <Button x:Name="delBtn" Height="25" Width="25" VerticalAlignment="Top" Click="delBtn_Click" ToolTip="Delete annotation" >
+                        <Button.Content>
+                            <Image Source=".\Imgs\delete.png" />
+                        </Button.Content>
+                    </Button>
+                    <Button x:Name="loadBtn" Height="25" Width="25" VerticalAlignment="Top" Click="loadBtn_Click" ToolTip="Load annotations..." >
+                        <Button.Content>
+                            <Image Source=".\Imgs\load.png" />
+                        </Button.Content>
+                    </Button>
+                    <Button x:Name="saveBtn" Height="25" Width="25" VerticalAlignment="Top" Click="saveBtn_Click" ToolTip="{Binding ElementName=PDFTronViewer,Path=CurrentSaveFile}">
+                        <Button.Content>
+                            <Image Source=".\Imgs\save.png" />
+                        </Button.Content>
+                    </Button>
+                    <Button x:Name="saveAsBtn" Height="25" Width="25" VerticalAlignment="Top" Click="saveAsBtn_Click" ToolTip="Save as..." >
+                        <Button.Content>
+                            <Image Source=".\Imgs\save-as.png" />
+                        </Button.Content>
+                    </Button>
+                    <Button x:Name="fromWebApi" Height="25" Width="25" VerticalAlignment="Top" Click="fromWebApi_Click" ToolTip="from Web Api" >
+                        <Button.Content>
+                            <Image Source=".\Imgs\download.png" />
+                        </Button.Content>
+                    </Button>
+                
+            <Button x:Name="btZoomLess" Click="btZoomOut_Click" ToolTip="Zoom -" >
+                <Button.Content>
+                    <Image Source=".\Imgs\ZoomOut.png" />
+                </Button.Content>
+            </Button>
+            <Button x:Name="btZoomPlus" Click="btZoomIn_Click" ToolTip="Zoom +" >
+                <Button.Content>
+                    <Image Source=".\Imgs\ZoomIn.png" />
+                </Button.Content>
+            </Button>
+        </ToolBar>
+            </ToolBarTray>
+            <Border x:Name="PDFViewerBorder" /><!--Grid.Row="1"-->
     </DockPanel>
         <Rectangle Name="previewRect" Stroke="Black" Fill="Blue" Width="0" Height="0" Opacity=".4"/>
     </Grid>
