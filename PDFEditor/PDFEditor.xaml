@@ -1,0 +1,79 @@
+﻿<UserControl x:Class="PDFEditorNS.PDFEditor"
+             x:Name="PDFTronViewer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PDFEditorNS"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="400" Margin="5,0,5,5">
+    <UserControl.Resources>
+        <Style x:Key="ActionButtonsStyle" TargetType="Control">
+            <Setter Property="Control.Background" Value="Beige"></Setter>
+            <Setter Property="Control.Margin" Value="1,0,1,0"></Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="FontWeight" Value="Bold" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    <Grid Name="gContainer">
+        <DockPanel Name="dpContainer">
+            <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar Height="29" >
+                <Button Name="btPrevious" Click="btPrevious_Click" ToolTip="Previous page" Style="{StaticResource ActionButtonsStyle}">
+                    <Button.Content>
+                        <Image Source=".\Imgs\Previous.png" ></Image>
+                    </Button.Content>
+                </Button>
+                <TextBox Name="tbCurrentPage" PreviewTextInput="tbCurrentPage_PreviewTextInput" TextChanged="tbCurrentPage_TextChanged">0</TextBox>
+                <Button Name="btNext" Click="btNext_Click" ToolTip="Next page" Style="{StaticResource ActionButtonsStyle}">
+                    <Button.Content>
+                        <Image Source=".\Imgs\Next.png" ></Image>
+                    </Button.Content>
+                </Button>
+                <RadioButton x:Name="rbHighlight" ToolTip="Highlight" Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbHighlight_Checked" Unchecked="rbHighlight_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown" >
+                    <RadioButton.Content>
+                        <Image Source=".\Imgs\Highlight.png" ></Image>
+                    </RadioButton.Content>
+                </RadioButton>
+                <RadioButton x:Name="rbNote" ToolTip="Comment"  Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbNote_Checked" Unchecked="rbNote_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown"  >
+                    <RadioButton.Content>
+                        <Image Source=".\Imgs\Comment.png" ></Image>
+                    </RadioButton.Content>
+                </RadioButton>
+                <RadioButton x:Name="rbMarkArea" ToolTip="Mark Area"  Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbMarkArea_Checked" Unchecked="rbMarkArea_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown"  >
+                    <RadioButton.Content>
+                        <Image Source=".\Imgs\MarkArea.png" ></Image>
+                    </RadioButton.Content>
+                </RadioButton>
+                <Button x:Name="delBtn" Click="delBtn_Click" ToolTip="Delete annotation" >
+                    <Button.Content>
+                        <Image Source=".\Imgs\delete.png" />
+                    </Button.Content>
+                </Button>
+                <Button x:Name="loadBtn" Click="loadBtn_Click" ToolTip="Load annotations..." >
+                    <Button.Content>
+                        <Image Source=".\Imgs\load.png" />
+                    </Button.Content>
+                </Button>
+                    <Button x:Name="saveBtn" Click="saveBtn_Click" ToolTip="{Binding ElementName=PDFTronViewer,Path=CurrentSaveFile}">
+                    <Button.Content>
+                        <Image Source=".\Imgs\save.png" />
+                    </Button.Content>
+                </Button>
+                <Button x:Name="saveAsBtn" Click="saveAsBtn_Click" ToolTip="Save as..." >
+                    <Button.Content>
+                        <Image Source=".\Imgs\save-as.png" />
+                    </Button.Content>
+                </Button>
+            </ToolBar>
+        </ToolBarTray>
+        <Border x:Name="PDFViewerBorder" /><!--Grid.Row="1"-->
+    </DockPanel>
+        <Rectangle Name="previewRect" Stroke="Black" Fill="Blue" Width="0" Height="0" Opacity=".4"/>
+    </Grid>
+</UserControl>
+
+    

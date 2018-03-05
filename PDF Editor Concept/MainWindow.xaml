@@ -1,0 +1,19 @@
+﻿<Window x:Class="PDF_Editor_Concept.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:pe="clr-namespace:PDFEditorNS;assembly=PDFEditor"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="840" Width="525" Name="wMainWindow">
+    <DockPanel>
+        <!--<Grid.RowDefinitions>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>-->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" DockPanel.Dock="Top">
+            <Button Command="{Binding OpenCommand}">Open</Button>
+        </StackPanel>
+        <pe:PDFEditor IsEnabled="{Binding Path=EditorEnabled, Mode=OneWay}" x:Name="myEditor" PopupsOwner="{x:Reference Name=wMainWindow}"  Grid.Row="1" CurrentDoc="{Binding Path=currentPDF, Mode=TwoWay}" />
+    </DockPanel>
+</Window>
