@@ -34,10 +34,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="kahua.kdk.dotnet">
-      <HintPath>..\DLLs\kahua.kdk.dotnet.dll</HintPath>
+      <HintPath>..\..\PDFTronConcept\DLLs\kahua.kdk.dotnet.dll</HintPath>
     </Reference>
     <Reference Include="PDFNet">
-      <HintPath>..\DLLs\PDFNet.dll</HintPath>
+      <HintPath>..\..\PDFTronConcept\DLLs\PDFNet.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -56,7 +56,7 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="Xceed.Wpf.Toolkit">
-      <HintPath>..\DLLs\WPFToolkit\Xceed.Wpf.Toolkit.dll</HintPath>
+      <HintPath>..\..\PDFTronConcept\DLLs\WPFToolkit\Xceed.Wpf.Toolkit.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

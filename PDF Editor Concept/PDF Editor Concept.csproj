@@ -51,7 +51,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PDFNet">
-      <HintPath>..\DLLs\PDFNet.dll</HintPath>
+      <HintPath>..\..\PDFTronConcept\DLLs\PDFNet.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
