@@ -133,7 +133,7 @@ namespace PDFEditorNS
 
             var rect = new pdftron.PDF.Rect(x1, y1, x2, y2);
             TextPopup popup;
-
+            var currentColor = getUserSelectedColor();
             // Option selected in the Toolbar
             //****************************************************************refactorize with Factory???????????????
             switch (_activeOption)
@@ -163,7 +163,8 @@ namespace PDFEditorNS
                     popup.Owner = this.PopupsOwner;
                     popup.Show();
 
-                    txt.SetColor(new ColorPt(1, 0, 0));
+                    //txt.SetColor(new ColorPt(1, 0, 0));
+                    txt.SetColor(getUserSelectedColor());
                     txt.RefreshAppearance();
 
                     currentDoc.GetPage(currentPage).AnnotPushBack(txt);
@@ -207,7 +208,8 @@ namespace PDFEditorNS
                         .RectArea(AnnotationsMannager.ConvertRect(rect)));
 
                     pdftron.PDF.Annots.FreeText freetext = pdftron.PDF.Annots.FreeText.Create(currentDoc, rect);
-                    freetext.SetTextColor(new ColorPt(0.7, 0, 0.7), 3);
+                    //freetext.SetTextColor(new ColorPt(0.7, 0, 0.7), 3);
+                    freetext.SetTextColor(getUserSelectedColor(), 3);
                     freetext.SetFontSize(20);
 
                     popup = new TextPopup();
@@ -282,28 +284,28 @@ namespace PDFEditorNS
                         .RectArea(AnnotationsMannager.ConvertRect(r))
                         .Page(currentPage);
                     textAnnot = Highlight.Create(currentDoc, textBoxRect);
-                    textAnnot.SetColor(new ColorPt(0.7,1,0.7,1),3);
+                    //textAnnot.SetColor(new ColorPt(0.7,1,0.7,1),3);                    
                     break;
                 case AnnotationOptions.SQUIGGLY:
                     b = new XMLSquiggly()
                         .RectArea(AnnotationsMannager.ConvertRect(r))
                         .Page(currentPage);
                     textAnnot = Squiggly.Create(currentDoc, textBoxRect);
-                    textAnnot.SetColor(new ColorPt(1,0.3,0.4,0.2),3);
+                    //textAnnot.SetColor(new ColorPt(1,0.3,0.4,0.2),3);
                     break;
                 case AnnotationOptions.STRIKEOUT:
                     b = new XMLStrikeout()
                         .RectArea(AnnotationsMannager.ConvertRect(r))
                         .Page(currentPage);
                     textAnnot = StrikeOut.Create(currentDoc, textBoxRect);
-                    textAnnot.SetColor(new ColorPt(1, 0.3, 0.4, 0.2), 3);
+                    //textAnnot.SetColor(new ColorPt(1, 0.3, 0.4, 0.2), 3);
                     break;
                 case AnnotationOptions.UNDERLINE:
                     b = new XMLUnderline()
                         .RectArea(AnnotationsMannager.ConvertRect(r))
                         .Page(currentPage);
                     textAnnot = Underline.Create(currentDoc, textBoxRect);
-                    textAnnot.SetColor(new ColorPt(1, 0.3, 0.4, 0.2), 3);
+                    //textAnnot.SetColor(new ColorPt(1, 0.3, 0.4, 0.2), 3);
                     break;
                 default:
                     //For the compiler. Should never reach this line.
@@ -311,6 +313,7 @@ namespace PDFEditorNS
                     textAnnot = Annot.Create(currentDoc, Annot.Type.e_3D, r);
                     break;
             }
+            textAnnot.SetColor(getUserSelectedColor(), 3);
             _userAnnots.AddAnnotation(b);
             currentDoc.GetPage(currentPage).AnnotPushBack(textAnnot);
             _viewer.Update(textAnnot, currentPage);
@@ -421,7 +424,8 @@ namespace PDFEditorNS
             ink.SetPoint(3, 10, pt3);
             #endregion Path Calculations
 
-            ink.SetColor(new ColorPt(0, 0.7, 0.7), 3);
+            //ink.SetColor(new ColorPt(0, 0.7, 0.7), 3);
+            ink.SetColor(getUserSelectedColor(), 3);
             currentDoc.GetPage(ma.Page()).AnnotPushBack(ink);
             _viewer.Update(ink, ma.Page());
         }
@@ -432,7 +436,8 @@ namespace PDFEditorNS
             pdftron.PDF.Rect r = AnnotationsMannager.ConvertRect(xhl.RectArea());
             Highlight hl = Highlight.Create(currentDoc, r);
             //hl.SetQuadPoint(0, new QuadPoint(new pdftron.PDF.Point(xDown, yUp), new pdftron.PDF.Point(xUp, yUp), new pdftron.PDF.Point(xUp, yDown), new pdftron.PDF.Point(xDown, yDown)));
-            hl.SetColor(new ColorPt(0.7, 1, 0.7, 1), 3);
+            //hl.SetColor(new ColorPt(0.7, 1, 0.7, 1), 3);
+            hl.SetColor(getUserSelectedColor(), 3);
             currentDoc.GetPage(xhl.Page()).AnnotPushBack(hl);
             _viewer.Update(hl,xhl.Page());
         }
@@ -442,7 +447,8 @@ namespace PDFEditorNS
             PDFDoc currentDoc = _viewer.GetDoc();
             pdftron.PDF.Rect r = AnnotationsMannager.ConvertRect(xsq.RectArea());
             Squiggly sq = Squiggly.Create(currentDoc, r);
-            sq.SetColor(new ColorPt(1, 0.3, 0.4, 0.2), 3);
+            //sq.SetColor(new ColorPt(1, 0.3, 0.4, 0.2), 3);
+            sq.SetColor(getUserSelectedColor(), 3);
             currentDoc.GetPage(xsq.Page()).AnnotPushBack(sq);
             _viewer.Update(sq, xsq.Page());
         }
@@ -453,7 +459,8 @@ namespace PDFEditorNS
             pdftron.PDF.Rect r = AnnotationsMannager.ConvertRect(sn.RectArea());
             pdftron.PDF.Annots.Text t = pdftron.PDF.Annots.Text.Create(currentDoc.GetSDFDoc(), r);
             t.SetContents(sn.Comment());
-            t.SetColor(new ColorPt(1, 0, 0));
+            //t.SetColor(new ColorPt(1, 0, 0));
+            t.SetColor(getUserSelectedColor(), 3);
             currentDoc.GetPage(sn.Page()).AnnotPushBack(t);
             _viewer.Update(t, sn.Page());
         }
@@ -463,7 +470,8 @@ namespace PDFEditorNS
             PDFDoc currentDoc = _viewer.GetDoc();
             pdftron.PDF.Rect r = AnnotationsMannager.ConvertRect(ft.RectArea());
             pdftron.PDF.Annots.FreeText freetext = pdftron.PDF.Annots.FreeText.Create(currentDoc, r);
-            freetext.SetTextColor(new ColorPt(0.7, 0, 0.7), 3);
+            //freetext.SetTextColor(new ColorPt(0.7, 0, 0.7), 3);
+            freetext.SetTextColor(getUserSelectedColor(), 3);
             freetext.SetFontSize(20);
             freetext.SetContents(ft.Text());
             currentDoc.GetPage(ft.Page()).AnnotPushBack(freetext);
@@ -475,7 +483,8 @@ namespace PDFEditorNS
             PDFDoc temp = _viewer.GetDoc();
             pdftron.PDF.Rect r = AnnotationsMannager.ConvertRect(c.RectArea());
             pdftron.PDF.Annots.Circle hl = pdftron.PDF.Annots.Circle.Create(temp.GetSDFDoc(), r);
-            hl.SetColor(new ColorPt(0.7, 0, 0.7, 0), 3);
+            //hl.SetColor(new ColorPt(0.7, 0, 0.7, 0), 3);
+            hl.SetColor(getUserSelectedColor(), 3);
             temp.GetPage(c.Page()).AnnotPushBack(hl);
             _viewer.Update(hl, c.Page());
         }
@@ -484,7 +493,8 @@ namespace PDFEditorNS
             PDFDoc temp = _viewer.GetDoc();
             pdftron.PDF.Rect r = AnnotationsMannager.ConvertRect(sq.RectArea());
             pdftron.PDF.Annots.Square hl = pdftron.PDF.Annots.Square.Create(temp.GetSDFDoc(), r);
-            hl.SetColor(new ColorPt(0.7, .8, 0, 0), 3);
+            //hl.SetColor(new ColorPt(0.7, .8, 0, 0), 3);
+            hl.SetColor(getUserSelectedColor(), 3);
             temp.GetPage(sq.Page()).AnnotPushBack(hl);
             _viewer.Update(hl, sq.Page());
         }
@@ -494,7 +504,8 @@ namespace PDFEditorNS
             pdftron.PDF.Rect r = AnnotationsMannager.ConvertRect(xl.RectArea());
             pdftron.PDF.Annots.Line hl = pdftron.PDF.Annots.Line.Create(temp.GetSDFDoc(), r); hl.SetStartPoint(new pdftron.PDF.Point(xl.XStart(), xl.YStart()));
             hl.SetEndPoint(new pdftron.PDF.Point(xl.XEnd(), xl.YEnd()));
-            hl.SetColor(new ColorPt(0, 0, .7, .8), 3);
+            //hl.SetColor(new ColorPt(0, 0, .7, .8), 3);
+            hl.SetColor(getUserSelectedColor(), 3);
             temp.GetPage(xl.Page()).AnnotPushBack(hl);
             _viewer.Update(hl, xl.Page());
         }
@@ -503,8 +514,10 @@ namespace PDFEditorNS
             //RubberStamp
             var doc = _viewer.GetDoc();
             pdftron.PDF.Annots.RubberStamp stamp = pdftron.PDF.Annots.RubberStamp.Create(doc, AnnotationsMannager.ConvertRect(rubberStamp.RectArea()));
-            stamp.SetIcon(pdftron.PDF.Annots.RubberStamp.Icon.e_Approved);//Enum of possible values for icon (text)            
-            stamp.SetOpacity(.3);
+            stamp.SetIcon(pdftron.PDF.Annots.RubberStamp.Icon.e_Approved);//Enum of possible values for icon (text) 
+            stamp.SetInteriorColor(getUserSelectedColor(), 3);
+            stamp.SetColor(getUserSelectedColor(), 3);
+            stamp.SetOpacity(.4);
             doc.GetPage(Viewer.GetCurrentPage()).AnnotPushBack(stamp);
             _viewer.Update(stamp, rubberStamp.Page());
         }
@@ -522,7 +535,8 @@ namespace PDFEditorNS
                 //s.SetAsAnnotation(true);
                 s.SetTextAlignment(pdftron.PDF.Stamper.TextAlignment.e_align_center);
                 s.SetAlignment(pdftron.PDF.Stamper.HorizontalAlignment.e_horizontal_left, pdftron.PDF.Stamper.VerticalAlignment.e_vertical_bottom);
-                s.SetFontColor(new ColorPt(1, .4, .3, 0));
+                //s.SetFontColor(new ColorPt(1, .4, .3, 0));
+                s.SetFontColor(getUserSelectedColor());
                 s.SetSize(pdftron.PDF.Stamper.SizeType.e_absolute_size, rect.x2 - rect.x1, rect.y2 - rect.y1);
                 s.SetPosition(rect.x1, rect.y1);
                 s.SetAsBackground(false);
@@ -1021,6 +1035,14 @@ namespace PDFEditorNS
             }
         }
         #endregion Paging
+        #region Color
+        private ColorPt getUserSelectedColor()
+        {
+            var color = this.cpActiveColor.SelectedColor;
+            //color.Value.
+            return new ColorPt(color.Value.ScR, color.Value.ScG, color.Value.ScB, color.Value.ScA);
+        }
+        #endregion Color
         #endregion ToolbarEvents
     }
 }
