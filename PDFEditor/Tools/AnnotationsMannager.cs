@@ -66,6 +66,14 @@ namespace PDFEditorNS
         #endregion Propertied Serialization
 
         #region Tools
+        public static ColorPt ConvertColor(double[] RGB)
+        {
+            return new ColorPt(RGB[0], RGB[1], RGB[2]);
+        }
+        public static double[] ConvertColor(ColorPt color)
+        {
+            return new double[] {color.Get(0), color.Get(1), color.Get(2)};
+        }
         public static string getFileName(string filePath)
         {
             string[] filenamePathParts = filePath.Split('\\');
@@ -132,5 +140,45 @@ namespace PDFEditorNS
         }
         */
         #endregion Old Serialization
+
+        #region Factory
+        public static BaseAnnotation CreateAnnotation(AnnotationOptions Name)
+        {
+            switch (Name)
+            {
+                case AnnotationOptions.HighlightAreaAnnotation:
+                    return new XMLHighlightArea();
+                case AnnotationOptions.HighlightTextAnnotation:
+                    return new XMLHighlightText();
+                case AnnotationOptions.StickyNoteAnnotation:
+                    return new StickyNote();
+                case AnnotationOptions.MarkAreaAnnotation:
+                    return new MarkArea();
+                case AnnotationOptions.FreeTextAnnotation:
+                    return new FreeText();
+                case AnnotationOptions.CircleAnnotation:
+                    return new Circle();
+                case AnnotationOptions.SquareAnnotation:
+                    return new Square();
+                case AnnotationOptions.LineAnnotation:
+                    return new Line();
+                case AnnotationOptions.StamperImageAnnotation:
+                    return new StamperImage();
+                case AnnotationOptions.StamperTextAnnotation:
+                    return new StamperText();
+                case AnnotationOptions.RubberStampAnnotation:
+                    return new RubberStamp();
+                case AnnotationOptions.SquigglyAnnotation:
+                    return new XMLSquiggly();
+                case AnnotationOptions.StrikeoutAnnotation:
+                    return new XMLStrikeout();
+                case AnnotationOptions.UnderlineAnnotation:
+                    return new XMLUnderline();
+                case AnnotationOptions.NONE:
+                default:
+                    return null;
+            }
+        }
+        #endregion Factory
     }
 }

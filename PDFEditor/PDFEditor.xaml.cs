@@ -119,436 +119,97 @@ namespace PDFEditorNS
         #endregion Dependecy Properties
 
         #region Annotations Handling
-        private void createAnnotation(double x1,double y1,double x2,double y2, bool fromViewer = false)
+        private void createAnnotation(double x1,double y1,double x2,double y2)
         {
+            if (_activeOption == AnnotationOptions.NONE) //This shouldn't happen
+                return;
+
             PDFDoc currentDoc = _viewer.GetDoc();
             int currentPage = _viewer.CurrentPageNumber;
 
             //Need to convert coordinates
-            if (!fromViewer)
+            AnnotationsMannager.ConvertScreenPositionsToPagePositions(_viewer, currentPage, ref x1,ref y1);
+            AnnotationsMannager.ConvertScreenPositionsToPagePositions(_viewer, currentPage, ref x2,ref y2);
+
+            var currentColor = AnnotationsMannager.ConvertColor(getUserSelectedColor());
+
+            BaseAnnotation inputAnnotation = AnnotationsMannager.CreateAnnotation(_activeOption)
+                .Page(currentPage)
+                .ColorRed(currentColor[0])
+                .ColorGreen(currentColor[1])
+                .ColorBlue(currentColor[2]);
+
+            // RectArea does not overrides, but adds as another element of Rect Collection - Need to check this.
+            if (_activeOption != AnnotationOptions.HighlightTextAnnotation
+                && _activeOption != AnnotationOptions.SquigglyAnnotation
+                && _activeOption != AnnotationOptions.StrikeoutAnnotation
+                && _activeOption != AnnotationOptions.UnderlineAnnotation)
+                inputAnnotation.RectArea(AnnotationsMannager.ConvertRect(new pdftron.PDF.Rect(x1, y1, x2, y2)));
+
+            //Line requires special coords
+            if (_activeOption == AnnotationOptions.LineAnnotation)
             {
-                AnnotationsMannager.ConvertScreenPositionsToPagePositions(_viewer, currentPage, ref x1,ref y1);
-                AnnotationsMannager.ConvertScreenPositionsToPagePositions(_viewer, currentPage, ref x2,ref y2);
+                ((Line)inputAnnotation)
+                    .XStart(x1)
+                    .YStart(y1)
+                    .XEnd(x2)
+                    .YEnd(y2);
             }
 
-            var rect = new pdftron.PDF.Rect(x1, y1, x2, y2);
-            TextPopup popup;
-            var currentColor = getUserSelectedColor();
-            // Option selected in the Toolbar
-            //****************************************************************refactorize with Factory???????????????
-            switch (_activeOption)
+            // If it is a Text Annotation I need to select only the text. i.e. reshape the rectangle
+            // Future refactor: TextAnnotation:BaseAnnotation
+            if (   _activeOption == AnnotationOptions.HighlightTextAnnotation
+                || _activeOption == AnnotationOptions.SquigglyAnnotation
+                || _activeOption == AnnotationOptions.StrikeoutAnnotation
+                || _activeOption == AnnotationOptions.UnderlineAnnotation)
             {
-                case AnnotationOptions.HIGHLIGHTAREA:
-                    BaseAnnotation userHL = new XMLHighlight()
-                        .Page(currentPage)
-                        .RectArea(AnnotationsMannager.ConvertRect(rect));
-                    _userAnnots.AddAnnotation(userHL);
-                    setHighlight((XMLHighlight)userHL);
-                    break;
-                //case AnnotationOptions.SQUIGGLY:
-                //    BaseAnnotation userSQ = new XMLSquiggly()
-                //        .Page(currentPage)
-                //        .RectArea(AnnotationsMannager.ConvertRect(rect));
-                //    _userAnnots.AddAnnotation(userSQ);
-                //    setSquiggly((XMLSquiggly)userSQ);
-                //    break;
-                case AnnotationOptions.COMMENT:
-                    StickyNote userSN = (StickyNote)(new StickyNote()
-                        .Page(currentPage)
-                        .RectArea(AnnotationsMannager.ConvertRect(rect)));
+                _viewer.SetTextSelectionMode(PDFViewWPF.TextSelectionMode.e_structural);
+                bool textSelected = _viewer.Select(x1, y1, inputAnnotation.Page(), x2, y2, inputAnnotation.Page());
 
-                    pdftron.PDF.Annots.Text txt = pdftron.PDF.Annots.Text.Create(currentDoc, rect, "");
-                    popup = new TextPopup();
-                    popup.Closed += (object closedSender, EventArgs eClosed) => { userSN.Comment(popup.Text); };
-                    popup.Owner = this.PopupsOwner;
-                    popup.Show();
+                if (!textSelected)
+                    return;
 
-                    //txt.SetColor(new ColorPt(1, 0, 0));
-                    txt.SetColor(getUserSelectedColor());
-                    txt.RefreshAppearance();
-
-                    currentDoc.GetPage(currentPage).AnnotPushBack(txt);
-                    _userAnnots.AddAnnotation(userSN);
-                    break;
-                case AnnotationOptions.MARKAREA:
-                    BaseAnnotation userMA = new MarkArea()
-                        .Page(currentPage)
-                        .RectArea(AnnotationsMannager.ConvertRect(rect));
-                    _userAnnots.AddAnnotation(userMA);
-                    setMarkArea((MarkArea)userMA);
-                    break;
-                case AnnotationOptions.CIRCLE:
-                    BaseAnnotation userCircle = new Circle()
-                        .Page(currentPage)
-                        .RectArea(AnnotationsMannager.ConvertRect(new pdftron.PDF.Rect(x1, y1, x2, y2)));
-                    _userAnnots.AddAnnotation(userCircle);
-                    setCircle((Circle)userCircle);
-                    break;
-                case AnnotationOptions.SQUARE:
-                    BaseAnnotation userSquare = new Square()
-                        .Page(currentPage)
-                        .RectArea(AnnotationsMannager.ConvertRect(new pdftron.PDF.Rect(x1, y1, x2, y2)));
-                    _userAnnots.AddAnnotation(userSquare);
-                    setSquare((Square)userSquare);
-                    break;
-                case AnnotationOptions.LINE:
-                    BaseAnnotation userLine = new Line()
-                        .XStart(x1)
-                        .YStart(y1)
-                        .XEnd(x2)
-                        .YEnd(y2)
-                        .Page(currentPage)
-                        .RectArea(AnnotationsMannager.ConvertRect(new pdftron.PDF.Rect(x1, y1, x2, y2)));
-                    _userAnnots.AddAnnotation(userLine);
-                    setLine((Line)userLine);
-                    break;
-                case AnnotationOptions.FREETEXT:
-                    FreeText userFT = (FreeText)(new FreeText()
-                        .Page(currentPage)
-                        .RectArea(AnnotationsMannager.ConvertRect(rect)));
-
-                    pdftron.PDF.Annots.FreeText freetext = pdftron.PDF.Annots.FreeText.Create(currentDoc, rect);
-                    //freetext.SetTextColor(new ColorPt(0.7, 0, 0.7), 3);
-                    freetext.SetTextColor(getUserSelectedColor(), 3);
-                    freetext.SetFontSize(20);
-
-                    popup = new TextPopup();
-                    popup.Closed += (object closedSender, EventArgs eClosed) => { userFT.Text(popup.Text); freetext.SetContents(popup.Text); _viewer.Update(freetext, currentPage); };
-                    popup.Owner = this.PopupsOwner;
-                    popup.Show();
-
-                    currentDoc.GetPage(currentPage).AnnotPushBack(freetext);
-                    _viewer.Update(freetext, currentPage);
-                    _userAnnots.AddAnnotation(userFT);
-                    break;
-                case AnnotationOptions.STAMPER:
-                    BaseAnnotation userStamper = new Stamper()
-                        .IsImage(true)
-                        .Page(currentPage)
-                        .RectArea(AnnotationsMannager.ConvertRect(new pdftron.PDF.Rect(x1, y1, x2, y2)));
-                    _userAnnots.AddAnnotation(userStamper);
-                    setStamper((Stamper)userStamper);
-                    break;
-                case AnnotationOptions.STAMPERTEXT:
-                    BaseAnnotation userStamperText = new Stamper()
-                        .Text("TEXT MODE")
-                        .IsImage(false)
-                        .Page(currentPage)
-                        .RectArea(AnnotationsMannager.ConvertRect(new pdftron.PDF.Rect(x1, y1, x2, y2)));
-                    _userAnnots.AddAnnotation(userStamperText);
-                    setStamper((Stamper)userStamperText);
-                    break;
-                case AnnotationOptions.RUBBERSTAMP:
-                    BaseAnnotation userRubberStamp = new RubberStamp()
-                        .Page(currentPage)
-                        .RectArea(AnnotationsMannager.ConvertRect(new pdftron.PDF.Rect(x1, y1, x2, y2)));
-                    _userAnnots.AddAnnotation(userRubberStamp);
-                    setRubberStamp((RubberStamp)userRubberStamp);
-                    break;
-                case AnnotationOptions.HIGHLIGHTTEXT:
-                case AnnotationOptions.SQUIGGLY:
-                case AnnotationOptions.STRIKEOUT:
-                case AnnotationOptions.UNDERLINE:
-                    setTextAnnotation(new pdftron.PDF.Rect(x1, y1, x2, y2),currentPage);
-                    break;
-                case AnnotationOptions.NONE:
-                    break;
-                default:
-                    break;
+                double[] selectedTextBox = _viewer.GetSelection(inputAnnotation.Page()).GetQuads();
+                //Quads have the 8 coords, these are the coords to define a Rect
+                pdftron.PDF.Rect textBoxRect = new pdftron.PDF.Rect(selectedTextBox[0], selectedTextBox[1], selectedTextBox[4], selectedTextBox[5]);
+                inputAnnotation.RectArea(AnnotationsMannager.ConvertRect(textBoxRect));
             }
+
+            _userAnnots.AddAnnotation(inputAnnotation);
+            setPDFAnnotation(inputAnnotation);
 
             _viewer.SetCurrentPage(currentPage);
-            _viewer.Update();
         }
 
-        private void setTextAnnotation(pdftron.PDF.Rect r,int currentPage)
+        private void setPDFAnnotation(BaseAnnotation inputAnnotation, bool fromViewer = true)
         {
-            _viewer.SetTextSelectionMode(PDFViewWPF.TextSelectionMode.e_structural);
-            bool textSelected = _viewer.Select(r.x1,r.y1,currentPage,r.x2,r.y2,currentPage);
-
-            if (!textSelected)
-                return;
-
-            double[] selectedTextBox = _viewer.GetSelection(currentPage).GetQuads();
-            //Quads have the 8 coords, these are the coords to define a Rect
-            pdftron.PDF.Rect textBoxRect = new pdftron.PDF.Rect(selectedTextBox[0], selectedTextBox[1], selectedTextBox[4], selectedTextBox[5]);
-
             PDFDoc currentDoc = _viewer.GetDoc();
-            Annot textAnnot;
 
-            BaseAnnotation b;
-            switch (_activeOption)
+            Annot pdfAnnot = PDFAnnotationsFactory.CreatePDFAnnotation(inputAnnotation, currentDoc, fromViewer);
+            
+            //If the annotation requires PopUp I need to handle it
+            // Future refactor: Comment(popup-requiring)Annotation:BaseAnnotation
+            if (fromViewer && (_activeOption == AnnotationOptions.StickyNoteAnnotation
+                            || _activeOption == AnnotationOptions.FreeTextAnnotation
+                            /*|| _activeOption == AnnotationOptions.StamperTextAnnotation*/)) //Need to check this
             {
-                case AnnotationOptions.HIGHLIGHTTEXT:
-                    b = new XMLHighlight()
-                        .RectArea(AnnotationsMannager.ConvertRect(r))
-                        .Page(currentPage);
-                    textAnnot = Highlight.Create(currentDoc, textBoxRect);
-                    //textAnnot.SetColor(new ColorPt(0.7,1,0.7,1),3);                    
-                    break;
-                case AnnotationOptions.SQUIGGLY:
-                    b = new XMLSquiggly()
-                        .RectArea(AnnotationsMannager.ConvertRect(r))
-                        .Page(currentPage);
-                    textAnnot = Squiggly.Create(currentDoc, textBoxRect);
-                    //textAnnot.SetColor(new ColorPt(1,0.3,0.4,0.2),3);
-                    break;
-                case AnnotationOptions.STRIKEOUT:
-                    b = new XMLStrikeout()
-                        .RectArea(AnnotationsMannager.ConvertRect(r))
-                        .Page(currentPage);
-                    textAnnot = StrikeOut.Create(currentDoc, textBoxRect);
-                    //textAnnot.SetColor(new ColorPt(1, 0.3, 0.4, 0.2), 3);
-                    break;
-                case AnnotationOptions.UNDERLINE:
-                    b = new XMLUnderline()
-                        .RectArea(AnnotationsMannager.ConvertRect(r))
-                        .Page(currentPage);
-                    textAnnot = Underline.Create(currentDoc, textBoxRect);
-                    //textAnnot.SetColor(new ColorPt(1, 0.3, 0.4, 0.2), 3);
-                    break;
-                default:
-                    //For the compiler. Should never reach this line.
-                    b = new BaseAnnotation("");
-                    textAnnot = Annot.Create(currentDoc, Annot.Type.e_3D, r);
-                    break;
+                TextPopup popup = new TextPopup();
+
+                if (_activeOption == AnnotationOptions.StickyNoteAnnotation)
+                    popup.Closed += (object closedSender, EventArgs eClosed) => { ((StickyNote)inputAnnotation).Comment(popup.Text); };
+
+                if (_activeOption == AnnotationOptions.FreeTextAnnotation)
+                    popup.Closed += (object closedSender, EventArgs eClosed) => { ((FreeText)inputAnnotation).Text(popup.Text); pdfAnnot.SetContents(popup.Text); _viewer.Update(pdfAnnot, inputAnnotation.Page()); };
+
+                if (_activeOption == AnnotationOptions.StamperTextAnnotation)
+                    popup.Closed += (object closedSender, EventArgs eClosed) => { ((StamperText)inputAnnotation).Text(popup.Text); };
+
+                popup.Owner = this.PopupsOwner;
+                popup.Show();
             }
-            textAnnot.SetColor(getUserSelectedColor(), 3);
-            _userAnnots.AddAnnotation(b);
-            currentDoc.GetPage(currentPage).AnnotPushBack(textAnnot);
-            _viewer.Update(textAnnot, currentPage);
-        }
 
-        private void setMarkArea(MarkArea ma)
-        {
-            PDFDoc currentDoc = _viewer.GetDoc();
-            pdftron.PDF.Rect r = AnnotationsMannager.ConvertRect(ma.RectArea());
-            Ink ink = Ink.Create(currentDoc.GetSDFDoc(), r);
-
-            pdftron.PDF.Point pt3 = new pdftron.PDF.Point();
-            #region Path Calculations
-            //Bottom Path
-            pt3.x = r.x1; pt3.y = r.y1;
-            ink.SetPoint(0, 0, pt3);
-            pt3.x = r.x1 + 10 * (r.x2 - r.x1) / 100; pt3.y = r.y1 + 7 * (r.y2 - r.y1) / 100;
-            ink.SetPoint(0, 1, pt3);
-            pt3.x = r.x1 + 20 * (r.x2 - r.x1) / 100; pt3.y = r.y1;
-            ink.SetPoint(0, 2, pt3);
-            pt3.x = r.x1 + 30 * (r.x2 - r.x1) / 100; pt3.y = r.y1 + 7 * (r.y2 - r.y1) / 100;
-            ink.SetPoint(0, 3, pt3);
-            pt3.x = r.x1 + 40 * (r.x2 - r.x1) / 100; pt3.y = r.y1;
-            ink.SetPoint(0, 4, pt3);
-            pt3.x = r.x1 + 50 * (r.x2 - r.x1) / 100; pt3.y = r.y1 + 7 * (r.y2 - r.y1) / 100;
-            ink.SetPoint(0, 5, pt3);
-            pt3.x = r.x1 + 60 * (r.x2 - r.x1) / 100; pt3.y = r.y1;
-            ink.SetPoint(0, 6, pt3);
-            pt3.x = r.x1 + 70 * (r.x2 - r.x1) / 100; pt3.y = r.y1 + 7 * (r.y2 - r.y1) / 100;
-            ink.SetPoint(0, 7, pt3);
-            pt3.x = r.x1 + 80 * (r.x2 - r.x1) / 100; pt3.y = r.y1;
-            ink.SetPoint(0, 8, pt3);
-            pt3.x = r.x1 + 90 * (r.x2 - r.x1) / 100; pt3.y = r.y1 + 7 * (r.y2 - r.y1) / 100;
-            ink.SetPoint(0, 9, pt3);
-            pt3.x = r.x2; pt3.y = r.y1;
-            ink.SetPoint(0, 10, pt3);
-
-            //Top Path
-            pt3.x = r.x1; pt3.y = r.y2;
-            ink.SetPoint(1, 0, pt3);
-            pt3.x = r.x1 + 10 * (r.x2 - r.x1) / 100; pt3.y = r.y2 - 7 * (r.y2 - r.y1) / 100;
-            ink.SetPoint(1, 1, pt3);
-            pt3.x = r.x1 + 20 * (r.x2 - r.x1) / 100; pt3.y = r.y2;
-            ink.SetPoint(1, 2, pt3);
-            pt3.x = r.x1 + 30 * (r.x2 - r.x1) / 100; pt3.y = r.y2 - 7 * (r.y2 - r.y1) / 100;
-            ink.SetPoint(1, 3, pt3);
-            pt3.x = r.x1 + 40 * (r.x2 - r.x1) / 100; pt3.y = r.y2;
-            ink.SetPoint(1, 4, pt3);
-            pt3.x = r.x1 + 50 * (r.x2 - r.x1) / 100; pt3.y = r.y2 - 7 * (r.y2 - r.y1) / 100;
-            ink.SetPoint(1, 5, pt3);
-            pt3.x = r.x1 + 60 * (r.x2 - r.x1) / 100; pt3.y = r.y2;
-            ink.SetPoint(1, 6, pt3);
-            pt3.x = r.x1 + 70 * (r.x2 - r.x1) / 100; pt3.y = r.y2 - 7 * (r.y2 - r.y1) / 100;
-            ink.SetPoint(1, 7, pt3);
-            pt3.x = r.x1 + 80 * (r.x2 - r.x1) / 100; pt3.y = r.y2;
-            ink.SetPoint(1, 8, pt3);
-            pt3.x = r.x1 + 90 * (r.x2 - r.x1) / 100; pt3.y = r.y2 - 7 * (r.y2 - r.y1) / 100;
-            ink.SetPoint(1, 9, pt3);
-            pt3.x = r.x2; pt3.y = r.y2;
-            ink.SetPoint(1, 10, pt3);
-
-            //Left Path
-            pt3.x = r.x1; pt3.y = r.y1;
-            ink.SetPoint(2, 0, pt3);
-            pt3.y = r.y1 + 10 * (r.y2 - r.y1) / 100; pt3.x = r.x1 + 7 * (r.x2 - r.x1) / 100;
-            ink.SetPoint(2, 1, pt3);
-            pt3.y = r.y1 + 20 * (r.y2 - r.y1) / 100; pt3.x = r.x1;
-            ink.SetPoint(2, 2, pt3);
-            pt3.y = r.y1 + 30 * (r.y2 - r.y1) / 100; pt3.x = r.x1 + 7 * (r.x2 - r.x1) / 100;
-            ink.SetPoint(2, 3, pt3);
-            pt3.y = r.y1 + 40 * (r.y2 - r.y1) / 100; pt3.x = r.x1;
-            ink.SetPoint(2, 4, pt3);
-            pt3.y = r.y1 + 50 * (r.y2 - r.y1) / 100; pt3.x = r.x1 + 7 * (r.x2 - r.x1) / 100;
-            ink.SetPoint(2, 5, pt3);
-            pt3.y = r.y1 + 60 * (r.y2 - r.y1) / 100; pt3.x = r.x1;
-            ink.SetPoint(2, 6, pt3);
-            pt3.y = r.y1 + 70 * (r.y2 - r.y1) / 100; pt3.x = r.x1 + 7 * (r.x2 - r.x1) / 100;
-            ink.SetPoint(2, 7, pt3);
-            pt3.y = r.y1 + 80 * (r.y2 - r.y1) / 100; pt3.x = r.x1;
-            ink.SetPoint(2, 8, pt3);
-            pt3.y = r.y1 + 90 * (r.y2 - r.y1) / 100; pt3.x = r.x1 + 7 * (r.x2 - r.x1) / 100;
-            ink.SetPoint(2, 9, pt3);
-            pt3.x = r.x1; pt3.y = r.y2;
-            ink.SetPoint(2, 10, pt3);
-
-            //Right Path
-            pt3.x = r.x2; pt3.y = r.y1;
-            ink.SetPoint(3, 0, pt3);
-            pt3.y = r.y1 + 10 * (r.y2 - r.y1) / 100; pt3.x = r.x2 - 7 * (r.x2 - r.x1) / 100;
-            ink.SetPoint(3, 1, pt3);
-            pt3.y = r.y1 + 20 * (r.y2 - r.y1) / 100; pt3.x = r.x2;
-            ink.SetPoint(3, 2, pt3);
-            pt3.y = r.y1 + 30 * (r.y2 - r.y1) / 100; pt3.x = r.x2 - 7 * (r.x2 - r.x1) / 100;
-            ink.SetPoint(3, 3, pt3);
-            pt3.y = r.y1 + 40 * (r.y2 - r.y1) / 100; pt3.x = r.x2;
-            ink.SetPoint(3, 4, pt3);
-            pt3.y = r.y1 + 50 * (r.y2 - r.y1) / 100; pt3.x = r.x2 - 7 * (r.x2 - r.x1) / 100;
-            ink.SetPoint(3, 5, pt3);
-            pt3.y = r.y1 + 60 * (r.y2 - r.y1) / 100; pt3.x = r.x2;
-            ink.SetPoint(3, 6, pt3);
-            pt3.y = r.y1 + 70 * (r.y2 - r.y1) / 100; pt3.x = r.x2 - 7 * (r.x2 - r.x1) / 100;
-            ink.SetPoint(3, 7, pt3);
-            pt3.y = r.y1 + 80 * (r.y2 - r.y1) / 100; pt3.x = r.x2;
-            ink.SetPoint(3, 8, pt3);
-            pt3.y = r.y1 + 90 * (r.y2 - r.y1) / 100; pt3.x = r.x2 - 7 * (r.x2 - r.x1) / 100;
-            ink.SetPoint(3, 9, pt3);
-            pt3.x = r.x2; pt3.y = r.y2;
-            ink.SetPoint(3, 10, pt3);
-            #endregion Path Calculations
-
-            //ink.SetColor(new ColorPt(0, 0.7, 0.7), 3);
-            ink.SetColor(getUserSelectedColor(), 3);
-            currentDoc.GetPage(ma.Page()).AnnotPushBack(ink);
-            _viewer.Update(ink, ma.Page());
-        }
-
-        private void setHighlight(XMLHighlight xhl)
-        {
-            PDFDoc currentDoc = _viewer.GetDoc();
-            pdftron.PDF.Rect r = AnnotationsMannager.ConvertRect(xhl.RectArea());
-            Highlight hl = Highlight.Create(currentDoc, r);
-            //hl.SetQuadPoint(0, new QuadPoint(new pdftron.PDF.Point(xDown, yUp), new pdftron.PDF.Point(xUp, yUp), new pdftron.PDF.Point(xUp, yDown), new pdftron.PDF.Point(xDown, yDown)));
-            //hl.SetColor(new ColorPt(0.7, 1, 0.7, 1), 3);
-            hl.SetColor(getUserSelectedColor(), 3);
-            currentDoc.GetPage(xhl.Page()).AnnotPushBack(hl);
-            _viewer.Update(hl,xhl.Page());
-        }
-
-        private void setSquiggly(XMLSquiggly xsq)
-        {
-            PDFDoc currentDoc = _viewer.GetDoc();
-            pdftron.PDF.Rect r = AnnotationsMannager.ConvertRect(xsq.RectArea());
-            Squiggly sq = Squiggly.Create(currentDoc, r);
-            //sq.SetColor(new ColorPt(1, 0.3, 0.4, 0.2), 3);
-            sq.SetColor(getUserSelectedColor(), 3);
-            currentDoc.GetPage(xsq.Page()).AnnotPushBack(sq);
-            _viewer.Update(sq, xsq.Page());
-        }
-
-        private void setStickyNote(StickyNote sn)
-        {
-            PDFDoc currentDoc = _viewer.GetDoc();
-            pdftron.PDF.Rect r = AnnotationsMannager.ConvertRect(sn.RectArea());
-            pdftron.PDF.Annots.Text t = pdftron.PDF.Annots.Text.Create(currentDoc.GetSDFDoc(), r);
-            t.SetContents(sn.Comment());
-            //t.SetColor(new ColorPt(1, 0, 0));
-            t.SetColor(getUserSelectedColor(), 3);
-            currentDoc.GetPage(sn.Page()).AnnotPushBack(t);
-            _viewer.Update(t, sn.Page());
-        }
-
-        private void setFreeText(FreeText ft)
-        {
-            PDFDoc currentDoc = _viewer.GetDoc();
-            pdftron.PDF.Rect r = AnnotationsMannager.ConvertRect(ft.RectArea());
-            pdftron.PDF.Annots.FreeText freetext = pdftron.PDF.Annots.FreeText.Create(currentDoc, r);
-            //freetext.SetTextColor(new ColorPt(0.7, 0, 0.7), 3);
-            freetext.SetTextColor(getUserSelectedColor(), 3);
-            freetext.SetFontSize(20);
-            freetext.SetContents(ft.Text());
-            currentDoc.GetPage(ft.Page()).AnnotPushBack(freetext);
-            _viewer.Update(freetext, ft.Page());
-        }
-
-        private void setCircle(Circle c)
-        {
-            PDFDoc temp = _viewer.GetDoc();
-            pdftron.PDF.Rect r = AnnotationsMannager.ConvertRect(c.RectArea());
-            pdftron.PDF.Annots.Circle hl = pdftron.PDF.Annots.Circle.Create(temp.GetSDFDoc(), r);
-            //hl.SetColor(new ColorPt(0.7, 0, 0.7, 0), 3);
-            hl.SetColor(getUserSelectedColor(), 3);
-            temp.GetPage(c.Page()).AnnotPushBack(hl);
-            _viewer.Update(hl, c.Page());
-        }
-        private void setSquare(Square sq)
-        {
-            PDFDoc temp = _viewer.GetDoc();
-            pdftron.PDF.Rect r = AnnotationsMannager.ConvertRect(sq.RectArea());
-            pdftron.PDF.Annots.Square hl = pdftron.PDF.Annots.Square.Create(temp.GetSDFDoc(), r);
-            //hl.SetColor(new ColorPt(0.7, .8, 0, 0), 3);
-            hl.SetColor(getUserSelectedColor(), 3);
-            temp.GetPage(sq.Page()).AnnotPushBack(hl);
-            _viewer.Update(hl, sq.Page());
-        }
-        private void setLine(Line xl)
-        {
-            PDFDoc temp = _viewer.GetDoc();
-            pdftron.PDF.Rect r = AnnotationsMannager.ConvertRect(xl.RectArea());
-            pdftron.PDF.Annots.Line hl = pdftron.PDF.Annots.Line.Create(temp.GetSDFDoc(), r); hl.SetStartPoint(new pdftron.PDF.Point(xl.XStart(), xl.YStart()));
-            hl.SetEndPoint(new pdftron.PDF.Point(xl.XEnd(), xl.YEnd()));
-            //hl.SetColor(new ColorPt(0, 0, .7, .8), 3);
-            hl.SetColor(getUserSelectedColor(), 3);
-            temp.GetPage(xl.Page()).AnnotPushBack(hl);
-            _viewer.Update(hl, xl.Page());
-        }
-        private void setRubberStamp(RubberStamp rubberStamp)
-        {
-            //RubberStamp
-            var doc = _viewer.GetDoc();
-            pdftron.PDF.Annots.RubberStamp stamp = pdftron.PDF.Annots.RubberStamp.Create(doc, AnnotationsMannager.ConvertRect(rubberStamp.RectArea()));
-            stamp.SetIcon(pdftron.PDF.Annots.RubberStamp.Icon.e_Approved);//Enum of possible values for icon (text) 
-            stamp.SetInteriorColor(getUserSelectedColor(), 3);
-            stamp.SetColor(getUserSelectedColor(), 3);
-            stamp.SetOpacity(.4);
-            doc.GetPage(Viewer.GetCurrentPage()).AnnotPushBack(stamp);
-            _viewer.Update(stamp, rubberStamp.Page());
-        }
-        private void setStamper(Stamper stp)
-        {
-            var doc = _viewer.GetDoc();
-            var page = doc.GetPage(stp.Page());
-            using (pdftron.PDF.Stamper s = new pdftron.PDF.Stamper(pdftron.PDF.Stamper.SizeType.e_relative_scale, .5, .5))
-            {
-                s.SetAsAnnotation(true);
-                var rect = AnnotationsMannager.ConvertRect(stp.RectArea());
-                doc.InitSecurityHandler();
-                pdftron.PDF.Image img = pdftron.PDF.Image.Create(doc, String.IsNullOrEmpty(stp.ImagePath()) ? "SuccessStamp.jpg" : stp.ImagePath());
-                //s.SetSize(Stamper.SizeType.e_relative_scale, 0.5, 0.5);
-                //s.SetAsAnnotation(true);
-                s.SetTextAlignment(pdftron.PDF.Stamper.TextAlignment.e_align_center);
-                s.SetAlignment(pdftron.PDF.Stamper.HorizontalAlignment.e_horizontal_left, pdftron.PDF.Stamper.VerticalAlignment.e_vertical_bottom);
-                //s.SetFontColor(new ColorPt(1, .4, .3, 0));
-                s.SetFontColor(getUserSelectedColor());
-                s.SetSize(pdftron.PDF.Stamper.SizeType.e_absolute_size, rect.x2 - rect.x1, rect.y2 - rect.y1);
-                s.SetPosition(rect.x1, rect.y1);
-                s.SetAsBackground(false);
-                s.SetOpacity(.3);
-                if (stp.IsImage())
-                    s.StampImage(doc, img, new PageSet(stp.Page()));
-                else
-                    s.StampText(doc, String.IsNullOrEmpty(stp.Text()) ? "Text undefined" : stp.Text(), new PageSet(stp.Page()));
-            }
-            var annot = page.GetAnnot(page.GetNumAnnots() - 1);
-            stp.RectArea(AnnotationsMannager.ConvertRect(annot.GetRect()));
-            _viewer.Update(annot, stp.Page());
+            currentDoc.GetPage(inputAnnotation.Page()).AnnotPushBack(pdfAnnot);
+            _viewer.Update(pdfAnnot, inputAnnotation.Page());
         }
 
         private void deleteAllAnnotations()
@@ -776,43 +437,43 @@ namespace PDFEditorNS
         #region ActiveOption
         private void rbUnderline_Checked(object sender, RoutedEventArgs e)
         {
-            _activeOption = AnnotationOptions.UNDERLINE;
+            _activeOption = AnnotationOptions.UnderlineAnnotation;
         }
         private void rbStrikeout_Checked(object sender, RoutedEventArgs e)
         {
-            _activeOption = AnnotationOptions.STRIKEOUT;
+            _activeOption = AnnotationOptions.StrikeoutAnnotation;
         }
         private void rbHighlightText_Checked(object sender, RoutedEventArgs e)
         {
-            _activeOption = AnnotationOptions.HIGHLIGHTTEXT;
+            _activeOption = AnnotationOptions.HighlightTextAnnotation;
         }
         private void rbFreeText_Checked(object sender, RoutedEventArgs e)
         {
-            _activeOption = AnnotationOptions.FREETEXT;
+            _activeOption = AnnotationOptions.FreeTextAnnotation;
         }
         private void rbHighlight_Checked(object sender, RoutedEventArgs e)
         {
-            _activeOption = AnnotationOptions.HIGHLIGHTAREA;
+            _activeOption = AnnotationOptions.HighlightAreaAnnotation;
         }
         private void rbSquiggly_Checked(object sender, RoutedEventArgs e)
         {
-            _activeOption = AnnotationOptions.SQUIGGLY;
+            _activeOption = AnnotationOptions.SquigglyAnnotation;
         }
         private void rbNote_Checked(object sender, RoutedEventArgs e)
         {
-            _activeOption = AnnotationOptions.COMMENT;
+            _activeOption = AnnotationOptions.StickyNoteAnnotation;
         }
         private void rbStamper_Checked(object sender, RoutedEventArgs e)
         {
-            _activeOption = AnnotationOptions.STAMPER;
+            _activeOption = AnnotationOptions.StamperImageAnnotation;
         }
         private void rbStamperText_Checked(object sender, RoutedEventArgs e)
         {
-            _activeOption = AnnotationOptions.STAMPERTEXT;
+            _activeOption = AnnotationOptions.StamperTextAnnotation;
         }
         private void rbRubberStamp_Checked(object sender, RoutedEventArgs e)
         {
-            _activeOption = AnnotationOptions.RUBBERSTAMP;
+            _activeOption = AnnotationOptions.RubberStampAnnotation;
         }
         private void rb_Unchecked(object sender, RoutedEventArgs e)
         {
@@ -830,19 +491,19 @@ namespace PDFEditorNS
         }
         private void rbMarkArea_Checked(object sender, RoutedEventArgs e)
         {
-            _activeOption = AnnotationOptions.MARKAREA;
+            _activeOption = AnnotationOptions.MarkAreaAnnotation;
         }
         private void rbCircle_Checked(object sender, RoutedEventArgs e)
         {
-            _activeOption = AnnotationOptions.CIRCLE;
+            _activeOption = AnnotationOptions.CircleAnnotation;
         }
         private void rbSquare_Checked(object sender, RoutedEventArgs e)
         {
-            _activeOption = AnnotationOptions.SQUARE;
+            _activeOption = AnnotationOptions.SquareAnnotation;
         }
         private void rbLine_Checked(object sender, RoutedEventArgs e)
         {
-            _activeOption = AnnotationOptions.LINE;
+            _activeOption = AnnotationOptions.LineAnnotation;
         }
         #endregion ActiveOption
         #region ButtonsClick
@@ -902,35 +563,7 @@ namespace PDFEditorNS
 
                 foreach (BaseAnnotation a in _userAnnots.AnnotationCollection)
                 {
-                    if (a is XMLHighlight)
-                        this.setHighlight((XMLHighlight)a);
-                    else
-                    if (a is XMLSquiggly)
-                        this.setSquiggly((XMLSquiggly)a);
-                    else
-                    if (a is StickyNote)
-                        this.setStickyNote((StickyNote)a);
-                    else
-                    if (a is MarkArea)
-                        this.setMarkArea((MarkArea)a);
-                    else
-                    if (a is FreeText)
-                        this.setFreeText((FreeText)a);
-                    else
-                    if (a is Circle)
-                        this.setCircle((Circle)a);
-                    else
-                    if (a is Square)
-                        this.setSquare((Square)a);
-                    else
-                    if (a is Line)
-                        this.setLine((Line)a);
-                    else
-                    if (a is Stamper)
-                        this.setStamper((Stamper)a);
-                    else
-                    if (a is RubberStamp)
-                        this.setRubberStamp((RubberStamp)a);
+                    setPDFAnnotation(a, false);
                 }
             }
         }

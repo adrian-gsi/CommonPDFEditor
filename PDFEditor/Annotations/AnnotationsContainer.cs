@@ -24,8 +24,8 @@ namespace PDFEditorNS
         {
             switch (properties.PropertyName)
             {
-                case XMLHighlight.Names.Highlight:
-                    return new XMLHighlight(properties);
+                case XMLHighlightText.Names.Highlight:
+                    return new XMLHighlightText(properties);
 
                 case StickyNote.Names.StickyNote:
                     return new StickyNote(properties);
@@ -45,8 +45,8 @@ namespace PDFEditorNS
                 case Line.Names.Line:
                     return new Line(properties);
 
-                case Stamper.Names.Stamper:
-                    return new Stamper(properties);
+                case StamperImage.Names.Stamper:
+                    return new StamperImage(properties);
 
                 case RubberStamp.Names.RubberStamp:
                     return new RubberStamp(properties);

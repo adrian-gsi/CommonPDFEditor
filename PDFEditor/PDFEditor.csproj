@@ -33,11 +33,13 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="kahua.kdk.dotnet">
-      <HintPath>..\..\PDFTronConcept\DLLs\kahua.kdk.dotnet.dll</HintPath>
+    <Reference Include="kahua.kdk.dotnet, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\DLLs\kahua.kdk.dotnet.dll</HintPath>
     </Reference>
-    <Reference Include="PDFNet">
-      <HintPath>..\..\PDFTronConcept\DLLs\PDFNet.dll</HintPath>
+    <Reference Include="PDFNet, Version=6.7.1.59452, Culture=neutral, PublicKeyToken=45663c462b939c60, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\DLLs\PDFNet.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -55,8 +57,9 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="Xceed.Wpf.Toolkit">
-      <HintPath>..\..\PDFTronConcept\DLLs\WPFToolkit\Xceed.Wpf.Toolkit.dll</HintPath>
+    <Reference Include="Xceed.Wpf.Toolkit, Version=3.2.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\DLLs\WPFToolkit\Xceed.Wpf.Toolkit.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -66,13 +69,15 @@
     <Compile Include="Annotations\BaseAnnotation.cs" />
     <Compile Include="Annotations\Circle.cs" />
     <Compile Include="Annotations\FreeText.cs" />
-    <Compile Include="Annotations\Highlight.cs" />
+    <Compile Include="Annotations\HighlightArea.cs" />
+    <Compile Include="Annotations\HighlightText.cs" />
     <Compile Include="Annotations\Line.cs" />
     <Compile Include="Annotations\MarkArea.cs" />
     <Compile Include="Annotations\RubberStamp.cs" />
     <Compile Include="Annotations\Square.cs" />
     <Compile Include="Annotations\Squiggly.cs" />
-    <Compile Include="Annotations\Stamper.cs" />
+    <Compile Include="Annotations\StamperImage.cs" />
+    <Compile Include="Annotations\StamperText.cs" />
     <Compile Include="Annotations\StickyNote.cs" />
     <Compile Include="Annotations\Strikeout.cs" />
     <Compile Include="Annotations\Underline.cs" />
@@ -81,6 +86,7 @@
     </Compile>
     <Compile Include="Tools\AnnotationsMannager.cs" />
     <Compile Include="Tools\enums.cs" />
+    <Compile Include="Tools\PDFAnnotationsFactory.cs" />
     <Page Include="Controls\TextPopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
