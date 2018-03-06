@@ -27,6 +27,9 @@ namespace PDFEditorNS
                 case XMLHighlightText.Names.Highlight:
                     return new XMLHighlightText(properties);
 
+                case XMLHighlightArea.Names.Highlight:
+                    return new XMLHighlightArea(properties);
+
                 case StickyNote.Names.StickyNote:
                     return new StickyNote(properties);
 
@@ -48,11 +51,20 @@ namespace PDFEditorNS
                 case StamperImage.Names.Stamper:
                     return new StamperImage(properties);
 
+                case StamperText.Names.Stamper:
+                    return new StamperText(properties);
+
                 case RubberStamp.Names.RubberStamp:
                     return new RubberStamp(properties);
 
                 case XMLSquiggly.Names.Squiggly:
                     return new XMLSquiggly(properties);
+
+                case XMLStrikeout.Names.Strikeout:
+                    return new XMLStrikeout(properties);
+
+                case XMLUnderline.Names.Underline:
+                    return new XMLUnderline(properties);
 
                 default:
                     throw new Exception($"Unknown assignment {properties.PropertyName}");
