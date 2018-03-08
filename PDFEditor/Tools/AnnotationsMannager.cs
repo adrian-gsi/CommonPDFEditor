@@ -12,27 +12,38 @@ namespace PDFEditorNS
         #region Class vars
         private bool hasUnsavedAnnotations = false;
 
-        //public List<BaseAnnotation> userAnnotations = new List<BaseAnnotation>();
-        private AnnotationsContainer _annotations = new AnnotationsContainer("Annotations");
+        private Dictionary<string,AnnotationsContainer> userAnnotations = new Dictionary<string, AnnotationsContainer>();
+        private AnnotationsContainer _defaultAnnotations = new AnnotationsContainer("default");
         #endregion Class vars
 
+        public AnnotationsMannager()
+        {
+            //For now....
+            userAnnotations.Add("default",_defaultAnnotations);
+        }
+
         #region Annotations Handling
-        public AnnotationsContainer AnnotationCollection { get { return _annotations; } }
+        public AnnotationsContainer AnnotationCollection(string annotationCollectionName = "default")
+        { 
+            return userAnnotations[annotationCollectionName];
+        }
 
         public bool HasUnsavedAnnotations { get => hasUnsavedAnnotations; set => hasUnsavedAnnotations = value; }
 
-        public void AddAnnotation(BaseAnnotation item)
+        public void AddAnnotation(BaseAnnotation item, string annotationCollectionName = "default")
         {
-            _annotations.Add(item);
+            userAnnotations[annotationCollectionName].Add(item);
             HasUnsavedAnnotations = true;
         }
 
-        public bool RemoveAnnotation(Rect rect, int pageIndex)
+        public bool RemoveAnnotation(Rect rect, int pageIndex, string annotationCollectionName = "default")
         {
-            foreach (BaseAnnotation b in _annotations)
+            AnnotationsContainer current = userAnnotations[annotationCollectionName];
+
+            foreach (BaseAnnotation b in current)
                 if ((b.Page()==pageIndex) &&(b.RectArea().X1() == rect.x1) && (b.RectArea().Y1() == rect.y1) && (b.RectArea().X2() == rect.x2) && (b.RectArea().Y2() == rect.y2))
                 {
-                    _annotations.Remove(b);
+                    current.Remove(b);
                     HasUnsavedAnnotations = true;
                     return true;
                 }
@@ -40,9 +51,9 @@ namespace PDFEditorNS
             return false;
         }
 
-        public void ClearAnnotations()
+        public void ClearAnnotations(string annotationCollectionName = "default")
         {
-            _annotations.Clear();
+            userAnnotations[annotationCollectionName].Clear();
             HasUnsavedAnnotations = true;
         }
 
@@ -50,18 +61,31 @@ namespace PDFEditorNS
 
         #region Propertied Serialization
         //Propertied Deserialize
-        public void LoadAnnotationsFromXml(string loadedXml)
+        public void LoadAnnotationsFromXml(string loadedXml, string annotationCollectionName = "default")
         {
-            _annotations = new AnnotationsContainer("Annotations");
-            _annotations.Definition = loadedXml;
+            AnnotationsContainer current = new AnnotationsContainer(annotationCollectionName);
+            current.Definition = loadedXml;
+
+            if (userAnnotations.ContainsKey(annotationCollectionName))
+            {
+                userAnnotations[annotationCollectionName] = current;
+            }
+            else
+            {
+                userAnnotations.Add(annotationCollectionName, current);
+            }
+            
             HasUnsavedAnnotations = false;
         }
 
         //Propertied Serialize
-        public string GetAnnotationsXml()
+        public string GetAnnotationsXml(string annotationCollectionName = "default")
         {
+            if (!userAnnotations.ContainsKey(annotationCollectionName))
+                return "";
+
             HasUnsavedAnnotations = false;
-            return _annotations.Definition;
+            return userAnnotations[annotationCollectionName].Definition;
         }
         #endregion Propertied Serialization
 

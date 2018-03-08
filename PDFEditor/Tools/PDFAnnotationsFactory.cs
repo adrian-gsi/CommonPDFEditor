@@ -13,46 +13,52 @@ namespace PDFEditorNS
             _currentDoc = pdfDocument;
             Annot pdfAnnotation;
 
-            if ((annotation is XMLHighlightArea)||(annotation is XMLHighlightText))
-                pdfAnnotation = setHighlight(annotation);
-            else
-            if (annotation is XMLSquiggly)
-                pdfAnnotation = setSquiggly((XMLSquiggly)annotation);
-            else
-            if (annotation is StickyNote)
-                pdfAnnotation = setStickyNote((StickyNote)annotation, fromViewer);
-            else
-            if (annotation is MarkArea)
-                pdfAnnotation = setMarkArea((MarkArea)annotation);
-            else
-            if (annotation is FreeText)
-                pdfAnnotation = setFreeText((FreeText)annotation, fromViewer);
-            else
-            if (annotation is Circle)
-                pdfAnnotation = setCircle((Circle)annotation);
-            else
-            if (annotation is Square)
-                pdfAnnotation = setSquare((Square)annotation);
-            else
-            if (annotation is Line)
-                pdfAnnotation = setLine((Line)annotation);
-            else
-            if (annotation is StamperImage)
-                pdfAnnotation = setStamperImage((StamperImage)annotation);
-            else
-            if (annotation is StamperText)
-                pdfAnnotation = setStamperText((StamperText)annotation);
-            else
-            if (annotation is RubberStamp)
-                pdfAnnotation = setRubberStamp((RubberStamp)annotation);
-            else
-            if (annotation is XMLStrikeout)
-                pdfAnnotation = setStrikeout((XMLStrikeout)annotation);
-            else
-            if (annotation is XMLUnderline)
-                pdfAnnotation = setUnderline((XMLUnderline)annotation);
-            else
-                pdfAnnotation = Annot.Create(null, Annot.Type.e_3D,null); // For Compiler. Should never execute this
+            switch (annotation.Properties.PropertyName)
+            {
+                case XMLHighlightText.Names.Highlight:
+                case XMLHighlightArea.Names.Highlight:
+                    pdfAnnotation = setHighlight(annotation);
+                    break;
+                case StickyNote.Names.StickyNote:
+                    pdfAnnotation = setStickyNote((StickyNote)annotation, fromViewer);
+                    break;
+                case MarkArea.Names.MarkArea:
+                    pdfAnnotation = setMarkArea((MarkArea)annotation);
+                    break;
+                case FreeText.Names.FreeText:
+                    pdfAnnotation = setFreeText((FreeText)annotation, fromViewer);
+                    break;
+                case Circle.Names.Circle:
+                    pdfAnnotation = setCircle((Circle)annotation);
+                    break;
+                case Square.Names.Square:
+                    pdfAnnotation = setSquare((Square)annotation);
+                    break;
+                case Line.Names.Line:
+                    pdfAnnotation = setLine((Line)annotation);
+                    break;
+                case StamperImage.Names.Stamper:
+                    pdfAnnotation = setStamperImage((StamperImage)annotation);
+                    break;
+                case StamperText.Names.Stamper:
+                    pdfAnnotation = setStamperText((StamperText)annotation);
+                    break;
+                case RubberStamp.Names.RubberStamp:
+                    pdfAnnotation = setRubberStamp((RubberStamp)annotation);
+                    break;
+                case XMLSquiggly.Names.Squiggly:
+                    pdfAnnotation = setSquiggly((XMLSquiggly)annotation);
+                    break;
+                case XMLStrikeout.Names.Strikeout:
+                    pdfAnnotation = setStrikeout((XMLStrikeout)annotation);
+                    break;
+                case XMLUnderline.Names.Underline:
+                    pdfAnnotation = setUnderline((XMLUnderline)annotation);
+                    break;
+                default:
+                    pdfAnnotation = Annot.Create(null, Annot.Type.e_3D, null); // For Compiler. Should never execute this
+                    break;
+            }
 
             if (!(annotation is FreeText)) // Quick Fix, need to revamp it
                 pdfAnnotation.SetColor(AnnotationsMannager.ConvertColor(new double[] { annotation.ColorRed(), annotation.ColorGreen(), annotation.ColorBlue() }), 3);
@@ -250,8 +256,8 @@ namespace PDFEditorNS
                 s.SetAsAnnotation(true);
                 var rect = AnnotationsMannager.ConvertRect(stp.RectArea());
                 _currentDoc.InitSecurityHandler();
-                pdftron.PDF.Image img = pdftron.PDF.Image.Create(_currentDoc, String.IsNullOrEmpty(stp.ImagePath()) ? "SuccessStamp.jpg" : stp.ImagePath());
-
+                //pdftron.PDF.Image img = pdftron.PDF.Image.Create(_currentDoc, String.IsNullOrEmpty(stp.ImagePath()) ? "SuccessStamp.jpg" : stp.ImagePath());
+                pdftron.PDF.Image img = pdftron.PDF.Image.Create(_currentDoc, System.Convert.FromBase64String(stp.Image()));
                 s.SetTextAlignment(pdftron.PDF.Stamper.TextAlignment.e_align_center);
                 s.SetAlignment(pdftron.PDF.Stamper.HorizontalAlignment.e_horizontal_left, pdftron.PDF.Stamper.VerticalAlignment.e_vertical_bottom);
                 s.SetSize(pdftron.PDF.Stamper.SizeType.e_absolute_size, rect.x2 - rect.x1, rect.y2 - rect.y1);

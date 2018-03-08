@@ -4,7 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:cp="clr-namespace:ColorPicker;assembly=ColorPicker"
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="400" Margin="5,0,5,5">
     <UserControl.Resources>
@@ -70,7 +70,10 @@
                     </RadioButton>
                     <RadioButton x:Name="rbStamper" ToolTip="Stamper"  Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbStamper_Checked" Unchecked="rb_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown"  >
                         <RadioButton.Content>
-                            <Image Source=".\Imgs\Stamper.png" ></Image>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source=".\Imgs\Stamper.png" ></Image>
+                                <CheckBox ToolTip="New Stamper image" VerticalAlignment="Center" x:Name="chkLoadImgForStamper" Click="chkLoadImgForStamper_Click" Checked="chkLoadImgForStamper_Checked"></CheckBox>
+                            </StackPanel>
                         </RadioButton.Content>
                     </RadioButton>
                     <RadioButton x:Name="rbStamperText" ToolTip="StamperText"  Height="24" Style="{StaticResource ActionButtonsStyle}" VerticalAlignment="Top" GroupName="EditionOptions" Checked="rbStamperText_Checked" Unchecked="rb_Unchecked" PreviewMouseDown="radioButton_PreviewMouseDown"  >
@@ -139,17 +142,20 @@
                 </Button.Content>
             </Button>
             <TextBlock Name="tbZoomValue">100%</TextBlock>
-            <Button x:Name="btZoomPlus" Click="btZoomIn_Click" ToolTip="Zoom +" >
-                <Button.Content>
-                    <Image Source=".\Imgs\ZoomIn.png" />
-                </Button.Content>
-            </Button>
-                    <Label Target="cpActiveColor">Active color</Label>
-                    <xctk:ColorPicker MaxWidth="40" x:Name="cpActiveColor" SelectedColor="Blue"></xctk:ColorPicker>
+                    <Button x:Name="btZoomPlus" Click="btZoomIn_Click" ToolTip="Zoom +" >
+                        <Button.Content>
+                            <Image Source=".\Imgs\ZoomIn.png" />
+                        </Button.Content>
+                    </Button>
+                    <Button Name="btSelectColor"  Click="btSelectColor_Click" ToolTip="Select color" Width="23" Height="23" BorderBrush="#FF070707" Background="{Binding Mode=OneWay, ElementName=PDFTronViewer, Path=CurrentColorBrush}" />
                 </ToolBar>
             </ToolBarTray>
-            <Border x:Name="PDFViewerBorder" /><!--Grid.Row="1"-->
-    </DockPanel>
+            <Border x:Name="PDFViewerBorder" />
+        </DockPanel>
+        <StackPanel Name="cColor" Visibility="Hidden" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button  Name="btCloseColorPicker" Click="btCloseColorPicker_Click" HorizontalAlignment="Right">X</Button>
+            <cp:_ColorPicker x:Name="cpActiveColor" Width="271" Height="168" CurrentColorChanged="cpActiveColor_CurrentColorChanged" LastColorChanged="cpActiveColor_LastColorChanged"/>
+        </StackPanel>
         <Rectangle Name="previewRect" Stroke="Black" Fill="Blue" Width="0" Height="0" Opacity=".4"/>
     </Grid>
 </UserControl>

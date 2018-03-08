@@ -5,10 +5,10 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using pdftron.PDF;
 using Microsoft.Win32;
 using System.Windows.Controls.Primitives;
-using System.Windows.Media;
 using pdftron.PDF.Annots;
 using static pdftron.PDF.Annot;
 using PDFEditor.Controls;
@@ -24,9 +24,10 @@ namespace PDFEditorNS
         private AnnotationOptions _activeOption = AnnotationOptions.NONE;
         private AnnotationsMannager _userAnnots = new AnnotationsMannager();
         private System.Windows.Point _lastDoubleClick;
-        //private string currentLoadedAnnotsFileName = Environment.CurrentDirectory + "\\annotations.xml";
-        private Window popupsOwner;
-        public Window PopupsOwner { get => popupsOwner; set => popupsOwner = value; }
+        private string _cachedDoc;
+        private byte[] _stamperImg;
+        private Window _popupsOwner;
+        public Window PopupsOwner { get => _popupsOwner; set => _popupsOwner = value; }
         #endregion Class vars
 
         #region Constructors
@@ -43,17 +44,34 @@ namespace PDFEditorNS
             _viewer.MouseDoubleClick += _viewer_MouseDoubleClick;
             _viewer.MouseMove += _viewer_MouseMove;
 
+            //Bydefault Save File
             CurrentSaveFile = "Save to " + Environment.CurrentDirectory + "\\annotations.xml";
+
+            //Bydefault UseCachedFile = false
+            UseCachedFile = true;
+
+            CurrentColorBrush = new SolidColorBrush(Color.FromArgb(1, 150, 250, 150));
+
+            //Destroy cached PDF
+            Application.Current.Exit += new ExitEventHandler(Current_Exit);
         }
 
-        
+        private void Current_Exit(object sender, ExitEventArgs e)
+        {
+            disposeCachedPDF();
+        }
+        private void disposeCachedPDF()
+        {
+            //Release the resource file
+            _viewer.GetDoc().Close();
+            _viewer.CloseDoc();
+
+            if (_cachedDoc != null)
+                File.Delete(_cachedDoc);
+        }
         #endregion Constructors
 
         #region Dependecy Properties
-
-        // We need this to be called from the OnFilepathToLoadPropertyChanged static method
-        public PDFViewWPF Viewer { get => _viewer; }
-
         #region CurrentDoc
         public static readonly DependencyProperty currentDocProperty = DependencyProperty.Register("CurrentDoc", typeof(string), typeof(PDFEditor), new PropertyMetadata(OnCurrentDocPropertyChanged));
 
@@ -78,23 +96,58 @@ namespace PDFEditorNS
                 return;
 
             PDFEditor editor = ((PDFEditor)source);
-            var viewer = editor.Viewer;
+            var viewer = editor._viewer;
 
-            string doc = (string)e.NewValue;
-            if (doc.Substring(0,5).ToLower().Equals("http:"))
+            string docURI = (string)e.NewValue;
+
+            //If starts with http: it has to be requested from a Web Api
+            if (docURI.Substring(0,5).ToLower().Equals("http:"))
             {
-                viewer.OpenURLAsync(doc);
+                //If flag UseCachedFile do a full download and load locally
+                if (editor.UseCachedFile)
+                {
+                    PDFDoc temp;
+
+                    if (editor._cachedDoc == null) //If first time - no cache
+                    {
+                        using (HttpClient client = new HttpClient())
+                        {
+                            //Load from WebApi
+                            using (var docStream = client.GetStreamAsync(docURI).Result)
+                            {
+                                temp = new PDFDoc(docStream);
+                                //Save to cached File
+                                editor._cachedDoc = System.IO.Path.GetTempPath() + "PDFEditor-temp.pdf";
+                                temp.Save(editor._cachedDoc, pdftron.SDF.SDFDoc.SaveOptions.e_linearized);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //Load from cached File
+                        temp = new PDFDoc(editor._cachedDoc);
+                    }
+                        
+                    viewer.SetDoc(temp);
+                }
+                else
+                    viewer.OpenURLAsync(docURI); //Else, have the viewer handle the connection to the WebApi
             }
-            else
+            else //Local load of the PDF, the CurrentDoc is a Filepath
             {
-                PDFDoc docToLoad = new PDFDoc(doc);
+                PDFDoc docToLoad = new PDFDoc(docURI);
+
+                //Release the resource file
+                viewer.GetDoc().Close();
+                viewer.CloseDoc();
+
                 viewer.SetDoc(docToLoad);
             }
             viewer.SetPagePresentationMode(PDFViewWPF.PagePresentationMode.e_single_continuous);
             //viewer.SetPageViewMode(PDFViewWPF.PageViewMode.e_fit_width);
             editor._userAnnots.ClearAnnotations();
             editor.tbCurrentPage.Text = "1";
-            editor.Viewer.SetZoom(1);
+            editor._viewer.SetZoom(1);
             editor.UpdateZoomValueInUI();
         }
         #endregion CurrentDoc
@@ -113,13 +166,64 @@ namespace PDFEditorNS
                 SetValue(currentSaveFileProperty, value);
             }
         }
-
         #endregion CurrentSaveFile
+
+        #region UseCachedFile
+        public static readonly DependencyProperty useCachedFileProperty = DependencyProperty.Register("UseCachedFile", typeof(bool), typeof(PDFEditor));
+
+        public bool UseCachedFile
+        {
+            get
+            {
+                return (bool)GetValue(useCachedFileProperty);
+            }
+            set
+            {
+                SetValue(useCachedFileProperty, value);
+            }
+        }
+        #endregion UseCachedFile
+
+        #region StamperImage
+        public delegate byte[] GetImage();
+        
+        public static readonly DependencyProperty getImageObjProperty = DependencyProperty.Register("GetImageObj", typeof(GetImage), typeof(PDFEditor));
+
+        public GetImage GetImageObj
+        {
+            get
+            {
+                return (GetImage)GetValue(getImageObjProperty);
+            }
+            set
+            {
+                SetValue(getImageObjProperty, value);
+            }
+        }
+
+        #endregion StamperImage
+
+        #region CurrentColorBrush
+        public static readonly DependencyProperty currentColorBrushProperty = DependencyProperty.Register("CurrentColorBrush", typeof(SolidColorBrush), typeof(PDFEditor));
+
+        public SolidColorBrush CurrentColorBrush
+        {
+            get
+            {
+                return (SolidColorBrush)GetValue(currentColorBrushProperty);
+            }
+            set
+            {
+                SetValue(currentColorBrushProperty, value);
+            }
+        }
+        #endregion CurrentColorBrush
 
         #endregion Dependecy Properties
 
         #region Annotations Handling
-        private void createAnnotation(double x1,double y1,double x2,double y2)
+        //This method is to be called from User interaction with the Viewer
+        private void createAnnotationFromUserInput(double x1,double y1,double x2,double y2)
         {
             if (_activeOption == AnnotationOptions.NONE) //This shouldn't happen
                 return;
@@ -131,20 +235,16 @@ namespace PDFEditorNS
             AnnotationsMannager.ConvertScreenPositionsToPagePositions(_viewer, currentPage, ref x1,ref y1);
             AnnotationsMannager.ConvertScreenPositionsToPagePositions(_viewer, currentPage, ref x2,ref y2);
 
+            //Grab the color from the colorpicker
             var currentColor = AnnotationsMannager.ConvertColor(getUserSelectedColor());
 
+            //Create the XMLAnnotation to save
             BaseAnnotation inputAnnotation = AnnotationsMannager.CreateAnnotation(_activeOption)
                 .Page(currentPage)
                 .ColorRed(currentColor[0])
                 .ColorGreen(currentColor[1])
-                .ColorBlue(currentColor[2]);
-
-            // RectArea does not overrides, but adds as another element of Rect Collection - Need to check this.
-            if (_activeOption != AnnotationOptions.HighlightTextAnnotation
-                && _activeOption != AnnotationOptions.SquigglyAnnotation
-                && _activeOption != AnnotationOptions.StrikeoutAnnotation
-                && _activeOption != AnnotationOptions.UnderlineAnnotation)
-                inputAnnotation.RectArea(AnnotationsMannager.ConvertRect(new pdftron.PDF.Rect(x1, y1, x2, y2)));
+                .ColorBlue(currentColor[2])
+                .RectArea(AnnotationsMannager.ConvertRect(new pdftron.PDF.Rect(x1, y1, x2, y2)));
 
             //Line requires special coords
             if (_activeOption == AnnotationOptions.LineAnnotation)
@@ -155,6 +255,10 @@ namespace PDFEditorNS
                     .XEnd(x2)
                     .YEnd(y2);
             }
+
+            //set image to StamperImage
+            if (_activeOption == AnnotationOptions.StamperImageAnnotation)
+                ((StamperImage)inputAnnotation).Image(System.Convert.ToBase64String(_stamperImg, Base64FormattingOptions.None));
 
             // If it is a Text Annotation I need to select only the text. i.e. reshape the rectangle
             // Future refactor: TextAnnotation:BaseAnnotation
@@ -172,6 +276,9 @@ namespace PDFEditorNS
                 double[] selectedTextBox = _viewer.GetSelection(inputAnnotation.Page()).GetQuads();
                 //Quads have the 8 coords, these are the coords to define a Rect
                 pdftron.PDF.Rect textBoxRect = new pdftron.PDF.Rect(selectedTextBox[0], selectedTextBox[1], selectedTextBox[4], selectedTextBox[5]);
+                
+                //RectArea adds to the collection, I need to remove the previous Rect
+                inputAnnotation.RemoveRectArea(inputAnnotation.RectAreas().FirstOrDefault());
                 inputAnnotation.RectArea(AnnotationsMannager.ConvertRect(textBoxRect));
             }
 
@@ -181,17 +288,27 @@ namespace PDFEditorNS
             _viewer.SetCurrentPage(currentPage);
         }
 
+        //This method is called to put the visual effect of an annotation on the Viewer.
+        //It is called from createAnnotationFromUserInput and from the Load XML
         private void setPDFAnnotation(BaseAnnotation inputAnnotation, bool fromViewer = true)
         {
             PDFDoc currentDoc = _viewer.GetDoc();
 
+            //Stamper is not PDFTron Annot. The Text is needed beforehand, can not be set after placing it.
+            if (fromViewer && _activeOption == AnnotationOptions.StamperTextAnnotation)
+            {
+                TextPopup popup = new TextPopup();
+                popup.Closed += (object closedSender, EventArgs eClosed) => { ((StamperText)inputAnnotation).Text(popup.Text); };
+                popup.Owner = this.PopupsOwner;
+                popup.ShowDialog(); //Main Window must wait for user text input - to set the Stamper.
+            }
+
             Annot pdfAnnot = PDFAnnotationsFactory.CreatePDFAnnotation(inputAnnotation, currentDoc, fromViewer);
             
-            //If the annotation requires PopUp I need to handle it
+            //Handling of PopUp-requiring annotations
             // Future refactor: Comment(popup-requiring)Annotation:BaseAnnotation
             if (fromViewer && (_activeOption == AnnotationOptions.StickyNoteAnnotation
-                            || _activeOption == AnnotationOptions.FreeTextAnnotation
-                            /*|| _activeOption == AnnotationOptions.StamperTextAnnotation*/)) //Need to check this
+                            || _activeOption == AnnotationOptions.FreeTextAnnotation))
             {
                 TextPopup popup = new TextPopup();
 
@@ -201,18 +318,17 @@ namespace PDFEditorNS
                 if (_activeOption == AnnotationOptions.FreeTextAnnotation)
                     popup.Closed += (object closedSender, EventArgs eClosed) => { ((FreeText)inputAnnotation).Text(popup.Text); pdfAnnot.SetContents(popup.Text); _viewer.Update(pdfAnnot, inputAnnotation.Page()); };
 
-                if (_activeOption == AnnotationOptions.StamperTextAnnotation)
-                    popup.Closed += (object closedSender, EventArgs eClosed) => { ((StamperText)inputAnnotation).Text(popup.Text); };
-
                 popup.Owner = this.PopupsOwner;
                 popup.Show();
             }
 
-            currentDoc.GetPage(inputAnnotation.Page()).AnnotPushBack(pdfAnnot);
+            //Set the annotation on Viewer's document
+            //currentDoc.GetPage(inputAnnotation.Page()).AnnotPushBack(pdfAnnot);
+            //Refresh visualization
             _viewer.Update(pdfAnnot, inputAnnotation.Page());
         }
 
-        private void deleteAllAnnotations()
+        private void clearAllAnnotationsFromViewer()
         {
             this._userAnnots.ClearAnnotations();
 
@@ -258,6 +374,7 @@ namespace PDFEditorNS
 
         private void Viewer_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            //Handling some buggy behaviour when double-clicking
             if (DoubleClickOngoing)
             {
                 DoubleClickOngoing = false;
@@ -286,7 +403,7 @@ namespace PDFEditorNS
                     return;
 
                 //Check for Annotation and Create it!
-                createAnnotation(xDown.Value, yDown.Value, xUp, yUp);
+                createAnnotationFromUserInput(xDown.Value, yDown.Value, xUp, yUp);
 
                 xDown = null;
                 yDown = null;
@@ -297,6 +414,7 @@ namespace PDFEditorNS
         double? xDown, yDown;
         private void Viewer_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            //Handle some buggy behaviour when double-clicking
             if (DoubleClickOngoing)
             {
                 DoubleClickOngoing = false;
@@ -322,7 +440,7 @@ namespace PDFEditorNS
             yDown = null;
             this._lastDoubleClick = e.GetPosition(_viewer);
 
-            //Need to PopUp?
+            //Need to PopUp? Check if user double-clicked a PopUp-able annotation
             var page = _viewer.GetDoc().GetPage(_viewer.GetCurrentPage());
             if (page.GetNumAnnots() > 0)
             {
@@ -403,7 +521,7 @@ namespace PDFEditorNS
                                 break;
                             case Annot.Type.e_Text:
 
-                                var a = (StickyNote)_userAnnots.AnnotationCollection.FirstOrDefault(t =>
+                                var a = (StickyNote)_userAnnots.AnnotationCollection().FirstOrDefault(t =>
                                                                                         (t.Page() ==page.GetIndex()) 
                                                                                         && (relX >= t.RectArea().X1() 
                                                                                         && relX <= t.RectArea().X2() 
@@ -466,6 +584,45 @@ namespace PDFEditorNS
         private void rbStamper_Checked(object sender, RoutedEventArgs e)
         {
             _activeOption = AnnotationOptions.StamperImageAnnotation;
+            if (this.GetImageObj != null)
+                _stamperImg = GetImageObj();
+            else // No function defined
+            {
+                if ((chkLoadImgForStamper.IsChecked.HasValue && chkLoadImgForStamper.IsChecked.Value) || _stamperImg == null)
+                {
+                    OpenFileDialog fileDialog = new OpenFileDialog();
+                    fileDialog.CheckFileExists = true;
+                    fileDialog.CheckPathExists = true;
+
+                    fileDialog.Title = "Select image for stamper";
+                    fileDialog.Filter = "PNG (*.png)|*.png|All files (*.*)|*.*";
+                    fileDialog.DefaultExt = ".png";
+
+                    if (fileDialog.ShowDialog() == true)
+                    {
+                        try
+                        {
+                            _stamperImg = File.ReadAllBytes(fileDialog.FileName);
+                        }
+                        catch (Exception)
+                        {
+                            rbStamper.IsChecked = false;
+                            _activeOption = AnnotationOptions.NONE;
+                            MessageBox.Show("The selected image could not be loaded.");
+                        }
+
+                    }
+                    else
+                    {
+                        rbStamper.IsChecked = false;
+                        _activeOption = AnnotationOptions.NONE;
+                    }
+                }
+                else
+                {
+                    //Use stamperImg
+                }
+            }
         }
         private void rbStamperText_Checked(object sender, RoutedEventArgs e)
         {
@@ -558,14 +715,15 @@ namespace PDFEditorNS
 
             if (File.Exists(CurrentSaveFile))
             {
-                // SWITCH for different Annotations
                 _userAnnots.LoadAnnotationsFromXml(File.ReadAllText(CurrentSaveFile));
 
-                foreach (BaseAnnotation a in _userAnnots.AnnotationCollection)
+                //For each XML Annotation, create its PDFTron Annot counterpart for visualization
+                foreach (BaseAnnotation a in _userAnnots.AnnotationCollection())
                 {
                     setPDFAnnotation(a, false);
                 }
             }
+            _viewer.Update(true);
         }
 
         private void setLoadedAnnotsFile()
@@ -579,7 +737,7 @@ namespace PDFEditorNS
             
             if (fileDialog.ShowDialog() == true)
             {
-                deleteAllAnnotations();
+                clearAllAnnotationsFromViewer();
 
                 CurrentSaveFile = fileDialog.FileName;
             }
@@ -589,7 +747,7 @@ namespace PDFEditorNS
         {
             _viewer.SetZoom(_viewer.GetZoom() + .25);
 
-            //Garantizar siempre un zoom menor o igual a 20
+            //Max Zoom: 1000%
             if (_viewer.GetZoom() > 10)
             {
                 _viewer.SetZoom(10);
@@ -599,13 +757,14 @@ namespace PDFEditorNS
 
         private void UpdateZoomValueInUI()
         {
-            tbZoomValue.Text = Math.Floor(Viewer.GetZoom() * 100) + "%";
+            tbZoomValue.Text = Math.Floor(_viewer.GetZoom() * 100) + "%";
         }
 
         private void btZoomOut_Click(object sender, RoutedEventArgs e)
         {
             _viewer.SetZoom(_viewer.GetZoom() - .25);
-            //Garantizar un zoom siempre mayor que .5
+            
+            //Min Zoom: 25%
             if (_viewer.GetZoom() < .25)
             {
                 _viewer.SetZoom(.25);
@@ -620,6 +779,34 @@ namespace PDFEditorNS
             //uri = @"http://localhost:8627/somefile";
             
             _viewer.OpenURLAsync(uri);
+        }
+        private void chkLoadImgForStamper_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void chkLoadImgForStamper_Checked(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+        private void btCloseColorPicker_Click(object sender, RoutedEventArgs e)
+        {
+            cColor.Visibility = Visibility.Hidden;
+        }
+        private void btSelectColor_Click(object sender, RoutedEventArgs e)
+        {
+            cColor.Visibility = Visibility.Visible;
+        }
+        private void cpActiveColor_CurrentColorChanged(object sender, RoutedEventArgs e)
+        {
+            this.CurrentColorBrush = new SolidColorBrush(cpActiveColor.IsCurrentColor);
+            //cpActiveColor.Visibility = Visibility.Collapsed;
+        }
+
+        private void cpActiveColor_LastColorChanged(object sender, RoutedEventArgs e)
+        {
+            this.CurrentColorBrush = new SolidColorBrush(cpActiveColor.IsLastColor);
+            //cpActiveColor.Visibility = Visibility.Collapsed;
         }
         #endregion ButtonsClick
         #region Paging
@@ -652,6 +839,7 @@ namespace PDFEditorNS
 
             return !regex.IsMatch(text);
         }
+
         private void tbCurrentPage_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (_viewer != null && !String.IsNullOrEmpty(tbCurrentPage.Text))
@@ -671,9 +859,8 @@ namespace PDFEditorNS
         #region Color
         private ColorPt getUserSelectedColor()
         {
-            var color = this.cpActiveColor.SelectedColor;
-            //color.Value.
-            return new ColorPt(color.Value.ScR, color.Value.ScG, color.Value.ScB, color.Value.ScA);
+            var color = this.CurrentColorBrush.Color;
+            return new ColorPt(System.Convert.ToDouble(color.R)/255, System.Convert.ToDouble(color.G) / 255, System.Convert.ToDouble(color.B) / 255);
         }
         #endregion Color
         #endregion ToolbarEvents

@@ -9,7 +9,7 @@ namespace PDFEditorNS
             public const string Stamper = "StamperImageAnnotation";
             public const string Rotation = "Rotation";
             public const string Opacity = "Opacity";
-            public const string ImagePath = "ImagePath";
+            public const string Image = "Image";
         }
 
         #region Constructors
@@ -32,7 +32,7 @@ namespace PDFEditorNS
         public double Opacity() { return Properties.Double(Names.Opacity); }
         public StamperImage Opacity(double opacity) { Properties.Double(Names.Opacity, opacity); return this; }
 
-        public string ImagePath() { return Properties.String(Names.ImagePath); }
-        public StamperImage ImagePath(string imagePath) { Properties.String(Names.ImagePath, imagePath); return this; }
+        public string Image() { return Properties.String(Names.Image); }
+        public StamperImage Image(string image) { Properties.String(Names.Image, image); return this; }
     }
 }
