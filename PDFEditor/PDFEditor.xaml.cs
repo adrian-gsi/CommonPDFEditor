@@ -43,15 +43,7 @@ namespace PDFEditorNS
 
             _viewer.MouseDoubleClick += _viewer_MouseDoubleClick;
             _viewer.MouseMove += _viewer_MouseMove;
-
-            //Bydefault Save File
-            CurrentSaveFile = "Save to " + Environment.CurrentDirectory + "\\annotations.xml";
-
-            //Bydefault UseCachedFile = false
-            UseCachedFile = true;
-
-            CurrentColorBrush = new SolidColorBrush(Color.FromArgb(1, 150, 250, 150));
-
+            
             //Destroy cached PDF
             Application.Current.Exit += new ExitEventHandler(Current_Exit);
         }
@@ -63,7 +55,8 @@ namespace PDFEditorNS
         private void disposeCachedPDF()
         {
             //Release the resource file
-            _viewer.GetDoc().Close();
+            if (_viewer.GetDoc()!=null)
+                _viewer.GetDoc().Close();
             _viewer.CloseDoc();
 
             if (_cachedDoc != null)
@@ -138,7 +131,8 @@ namespace PDFEditorNS
                 PDFDoc docToLoad = new PDFDoc(docURI);
 
                 //Release the resource file
-                viewer.GetDoc().Close();
+                if (viewer.GetDoc() != null)
+                    viewer.GetDoc().Close();
                 viewer.CloseDoc();
 
                 viewer.SetDoc(docToLoad);
@@ -153,7 +147,7 @@ namespace PDFEditorNS
         #endregion CurrentDoc
         
         #region CurrentSaveFile
-        public static readonly DependencyProperty currentSaveFileProperty = DependencyProperty.Register("CurrentSaveFile", typeof(string), typeof(PDFEditor));
+        public static readonly DependencyProperty currentSaveFileProperty = DependencyProperty.Register("CurrentSaveFile", typeof(string), typeof(PDFEditor), new PropertyMetadata("Save to " + Environment.CurrentDirectory + "\\annotations.xml"));
 
         public string CurrentSaveFile
         {
@@ -169,7 +163,7 @@ namespace PDFEditorNS
         #endregion CurrentSaveFile
 
         #region UseCachedFile
-        public static readonly DependencyProperty useCachedFileProperty = DependencyProperty.Register("UseCachedFile", typeof(bool), typeof(PDFEditor));
+        public static readonly DependencyProperty useCachedFileProperty = DependencyProperty.Register("UseCachedFile", typeof(bool), typeof(PDFEditor), new PropertyMetadata(false));
 
         public bool UseCachedFile
         {
@@ -204,7 +198,7 @@ namespace PDFEditorNS
         #endregion StamperImage
 
         #region CurrentColorBrush
-        public static readonly DependencyProperty currentColorBrushProperty = DependencyProperty.Register("CurrentColorBrush", typeof(SolidColorBrush), typeof(PDFEditor));
+        public static readonly DependencyProperty currentColorBrushProperty = DependencyProperty.Register("CurrentColorBrush", typeof(SolidColorBrush), typeof(PDFEditor), new PropertyMetadata(Brushes.PaleGreen));
 
         public SolidColorBrush CurrentColorBrush
         {
